@@ -1,8 +1,14 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import {
   FiHome,
+  FiUsers,
+  FiBox,
+  FiShoppingCart,
   FiDollarSign,
   FiMessageSquare,
+  FiShoppingBag,
+  FiTruck,
+  FiBarChart2,
   FiChevronLeft,
   FiChevronRight,
   FiUser,
@@ -20,8 +26,15 @@ export default function SidebarAdmin({ isOpen, setIsOpen }) {
 
   const menuItems = [
     { title: "Dashboard", icon: <FiHome size={20} />, path: "/admin/dashboard" },
-    { title: "Ingresos", icon: <FiDollarSign size={20} />, path: "/admin/revenue" },
+    { title: "Usuarios", icon: <FiUsers size={20} />, path: "/admin/usuarios" },
+    { title: "Repartidores", icon: <FiUsers size={20} />, path: "/admin/repartidores" },
+    { title: "Cocinas", icon: <FiBox size={20} />, path: "/admin/cocinas" },
+    { title: "Productos", icon: <FiShoppingBag size={20} />, path: "/admin/products" },
+    { title: "Pedidos", icon: <FiShoppingCart size={20} />, path: "/admin/pedidos" },
+    { title: "Entregas", icon: <FiTruck size={20} />, path: "/admin/deliveries" },
+    { title: "Ingresos", icon: <FiDollarSign size={20} />, path: "/admin/ingresos" },
     { title: "Opiniones", icon: <FiMessageSquare size={20} />, path: "/admin/feedbacks" },
+    { title: "Mi Perfil", icon: <FiUser size={20} />, path: "/admin/perfil" },
   ];
 
   return (

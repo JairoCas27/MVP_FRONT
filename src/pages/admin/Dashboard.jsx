@@ -1,420 +1,290 @@
-import React from "react";
-import { useActiveOrders } from "../../hooks/useAdmin";
+import React, { useEffect, useState } from "react";
+import { Container, Card, Row, Col, Alert, Spinner, Table, Badge } from "react-bootstrap";
+import { API_HOST } from "../../services/api";
 
-function Dashboard() {
-  const { orders, loading, error, advanceOrderState, cancelOrder } = useActiveOrders();
-
-  const getStatusColor = (status) => {
-    switch (status?.toLowerCase()) {
-      case "pendiente":
-        return { bg: "#FEF3C7", text: "#D97706", border: "#FCD34D" };
-      case "en preparación":
-      case "preparando":
-        return { bg: "#E0F2FE", text: "#0284C7", border: "#7DD3FC" };
-      case "listo":
-      case "en camino":
-        return { bg: "#DCFCE7", text: "#15803D", border: "#86EFAC" };
-      default:
-        return { bg: "#F3F4F6", text: "#4B5563", border: "#E5E7EB" };
-    }
-  };
-
-  if (loading) {
-    return (
-      <div style={styles.centerContainer}>
-        <div style={styles.spinner}></div>
-        <p style={styles.loadingText}>Cargando pedidos activos...</p>
-      </div>
-    );
+const styles = `
+  .dash-page { background: #f3f4f6; min-height: 100vh; }
+  .dash-header {
+    background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+    color: #fff;
+    padding: 28px 32px;
+    border-radius: 20px;
+    margin-bottom: 24px;
+    box-shadow: 0 12px 32px rgba(0,0,0,0.12);
   }
-
-  if (error) {
-    return (
-      <div style={styles.centerContainer}>
-        <div style={styles.errorCard}>
-          <span style={{ fontSize: "2rem" }}>⚠️</span>
-          <p style={styles.errorText}>Error: {error}</p>
-        </div>
-      </div>
-    );
+  .kpi-card {
+    background: #fff;
+    border-radius: 18px;
+    padding: 20px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+    border: 1px solid rgba(0,0,0,0.04);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
   }
+  .kpi-card:hover { transform: translateY(-4px); box-shadow: 0 14px 32px rgba(0,0,0,0.1); }
+  .kpi-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: var(--accent, #D63447);
+  }
+  .kpi-icon {
+    width: 48px; height: 48px; border-radius: 14px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 1.3rem;
+  }
+  .chart-card {
+    background: #fff;
+    border-radius: 18px;
+    padding: 22px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+    border: 1px solid rgba(0,0,0,0.04);
+    height: 100%;
+  }
+  .chart-bar {
+    height: 12px; border-radius: 999px; background: #f1f5f9; overflow: hidden;
+  }
+  .chart-fill {
+    height: 100%; border-radius: 999px;
+    background: linear-gradient(90deg, #D63447, #ff7a18);
+    transition: width 0.6s ease;
+  }
+  .chart-bar-blue { background: #f1f5f9; }
+  .chart-fill-blue {
+    height: 100%; border-radius: 999px;
+    background: linear-gradient(90deg, #2563EB, #60a5fa);
+  }
+  .status-dot {
+    width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 6px;
+  }
+  .recent-row:hover { background: #f9fafb; }
+  @media (max-width: 768px) {
+    .dash-header { padding: 20px; }
+  }
+`;
+
+export default function Dashboard() {
+  const [metrics, setMetrics] = useState(null);
+  const [counts, setCounts] = useState({ products: 0, clients: 0, feedbacks: 0, deliveries: 0, activeOrders: [] });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const token = localStorage.getItem("token");
+
+  useEffect(() => {
+    const headers = { Authorization: `Bearer ${token}` };
+    const load = async () => {
+      try {
+        const [m, p, c, f, d, a] = await Promise.all([
+          fetch(`${API_HOST}/api/admin/metrics`, { headers }).then((r) => r.json()),
+          fetch(`${API_HOST}/api/admin/products`, { headers }).then((r) => r.json()),
+          fetch(`${API_HOST}/api/admin/clients`, { headers }).then((r) => r.json()),
+          fetch(`${API_HOST}/api/admin/feedbacks`, { headers }).then((r) => r.json()),
+          fetch(`${API_HOST}/api/admin/deliveries`, { headers }).then((r) => r.json()),
+          fetch(`${API_HOST}/api/admin/orders/active`, { headers }).then((r) => r.json()),
+        ]);
+        if (m.status === "success") setMetrics(m.data);
+        setCounts({
+          products: p.data?.length || 0,
+          clients: c.data?.length || 0,
+          feedbacks: f.data?.length || 0,
+          deliveries: d.data?.length || 0,
+          activeOrders: a.data || [],
+        });
+        setError(null);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, []);
+
+  if (loading) return <div className="text-center py-5"><Spinner animation="border" variant="danger" /></div>;
+  if (error) return <Alert variant="danger">{error}</Alert>;
+  if (!metrics) return null;
+
+  const maxRevenue = Math.max(...metrics.daily.map((d) => d.revenue), 1);
+  const maxOrders = Math.max(...metrics.daily.map((d) => d.orders), 1);
+
+  const kpis = [
+    { label: "Ingresos totales", value: `S/ ${metrics.total_revenue.toFixed(2)}`, icon: "bi-cash-stack", color: "#16A34A", bg: "#DCFCE7", accent: "#16A34A" },
+    { label: "Pedidos totales", value: metrics.total_orders, icon: "bi-receipt", color: "#2563EB", bg: "#DBEAFE", accent: "#2563EB" },
+    { label: "Pedidos activos", value: metrics.active_orders, icon: "bi-hourglass-split", color: "#D97706", bg: "#FEF3C7", accent: "#D97706" },
+    { label: "Productos", value: counts.products, icon: "bi-box-seam", color: "#7C3AED", bg: "#EDE9FE", accent: "#7C3AED" },
+    { label: "Clientes", value: counts.clients, icon: "bi-people", color: "#0EA5E9", bg: "#E0F2FE", accent: "#0EA5E9" },
+    { label: "Entregas activas", value: counts.deliveries, icon: "bi-truck", color: "#EA580C", bg: "#FFEDD5", accent: "#EA580C" },
+  ];
 
   return (
-    <div style={styles.container}>
-      <style>{`
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(12px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-        .order-card {
-          transition: transform 0.25s ease, box-shadow 0.25s ease;
-        }
-        .order-card:hover {
-          transform: translateY(-4px);
-          box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.12) !important;
-        }
-        .btn-advance {
-          background-color: #2563EB;
-          color: #FFFFFF;
-          border: 1px solid #1D4ED8;
-          transition: background-color 0.2s ease, transform 0.1s ease;
-        }
-        .btn-advance:hover {
-          background-color: #1D4ED8;
-        }
-        .btn-advance:active {
-          transform: scale(0.98);
-        }
-        .btn-cancel {
-          background-color: #FFFFFF;
-          color: #DC2626;
-          border: 1px solid #FECACA;
-          transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.1s ease;
-        }
-        .btn-cancel:hover {
-          background-color: #FEF2F2;
-          border-color: #FCA5A5;
-        }
-        .btn-cancel:active {
-          transform: scale(0.98);
-        }
-      `}</style>
-
-      <header style={styles.header}>
-        <div>
-          <h1 style={styles.title}>Dashboard de Pedidos</h1>
-          <p style={styles.subtitle}>Gestión y seguimiento en tiempo real</p>
+    <div className="dash-page">
+      <style>{styles}</style>
+      <Container fluid>
+        <div className="dash-header">
+          <div className="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div>
+              <h2 className="fw-bold mb-1">Dashboard</h2>
+              <p className="mb-0 opacity-75">Resumen general del negocio · La Fogata</p>
+            </div>
+            <div className="text-end">
+              <div className="fw-bold fs-5">{new Date().toLocaleDateString("es-PE", { weekday: "long", day: "numeric", month: "long" })}</div>
+              <div className="opacity-75 small">Actualizado en tiempo real</div>
+            </div>
+          </div>
         </div>
-        <div style={styles.counterBadge}>
-          {orders.length} {orders.length === 1 ? "pedido activo" : "pedidos activos"}
-        </div>
-      </header>
 
-      {orders.length === 0 ? (
-        <div style={styles.emptyState}>
-          <h3 style={styles.emptyTitle}>No hay pedidos activos</h3>
-          <p style={styles.emptySubtitle}>Los nuevos pedidos aparecerán aquí automáticamente.</p>
-        </div>
-      ) : (
-        <div style={styles.grid}>
-          {orders.map((order, index) => {
-            const statusStyle = getStatusColor(order.status);
-            return (
-              <div
-                key={order.id}
-                className="order-card"
-                style={{
-                  ...styles.card,
-                  animationDelay: `${index * 0.05}s`,
-                }}
-              >
-                <div style={styles.cardHeader}>
-                  <div>
-                    <span style={styles.orderNumber}>Pedido #{order.id}</span>
-                    <span style={styles.orderType}>{order.order_type}</span>
-                  </div>
-                  <span
-                    style={{
-                      ...styles.statusBadge,
-                      backgroundColor: statusStyle.bg,
-                      color: statusStyle.text,
-                      borderColor: statusStyle.border,
-                    }}
-                  >
-                    {order.status}
-                  </span>
-                </div>
-
-                <div style={styles.customerSection}>
-                  <div style={styles.infoRow}>
-                    <span style={styles.infoLabel}>Cliente:</span>
-                    <span style={styles.infoValue}>{order.customer_name}</span>
-                  </div>
-                  <div style={styles.infoRow}>
-                    <span style={styles.infoLabel}>Teléfono:</span>
-                    <span style={styles.infoValue}>{order.customer_phone}</span>
+        <Row className="g-3 mb-4">
+          {kpis.map((k, i) => (
+            <Col key={i} xs={6} md={4} lg={3} xl={2} style={{ flex: "1 1 150px" }}>
+              <div className="kpi-card" style={{ "--accent": k.accent }}>
+                <div className="d-flex justify-content-between align-items-start mb-2">
+                  <div className="kpi-icon" style={{ background: k.bg, color: k.color }}>
+                    <i className={`bi ${k.icon}`}></i>
                   </div>
                 </div>
+                <div className="text-muted small">{k.label}</div>
+                <div className="fw-bold fs-4">{k.value}</div>
+              </div>
+            </Col>
+          ))}
+        </Row>
 
-                <div style={styles.itemsSection}>
-                  <h4 style={styles.itemsTitle}>Productos</h4>
-                  <ul style={styles.itemList}>
-                    {order.items.map((item, idx) => (
-                      <li key={idx} style={styles.itemRow}>
-                        <span style={styles.itemDetails}>
-                          <strong style={styles.itemQty}>{item.quantity}x</strong> {item.product_name}
-                        </span>
-                        <span style={styles.itemSubtotal}>S/.{item.subtotal}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                <div style={styles.totalRow}>
-                  <span style={styles.totalLabel}>Total</span>
-                  <span style={styles.totalAmount}>S/.{order.total_amount}</span>
-                </div>
-
-                <div style={styles.actions}>
-                  <button
-                    className="btn-advance"
-                    style={styles.button}
-                    onClick={() => advanceOrderState(order.id)}
-                  >
-                    Avanzar Estado
-                  </button>
-                  <button
-                    className="btn-cancel"
-                    style={{ ...styles.button, ...styles.buttonCancel }}
-                    onClick={() => cancelOrder(order.id)}
-                  >
-                    Cancelar
-                  </button>
+        <Row className="g-3 mb-4">
+          <Col md={8}>
+            <div className="chart-card">
+              <div className="d-flex justify-content-between align-items-center mb-3">
+                <h5 className="fw-bold mb-0">Ingresos y pedidos (últimos 7 días)</h5>
+                <div className="d-flex gap-3 small">
+                  <span><span className="status-dot" style={{ background: "#D63447" }}></span>Ingresos</span>
+                  <span><span className="status-dot" style={{ background: "#2563EB" }}></span>Pedidos</span>
                 </div>
               </div>
-            );
-          })}
-        </div>
-      )}
+              <svg viewBox="0 0 700 200" style={{ width: "100%", height: 200 }}>
+                {/* grid lines */}
+                {[0, 0.25, 0.5, 0.75, 1].map((t, i) => (
+                  <line key={i} x1="40" y1={180 - t * 150} x2="680" y2={180 - t * 150} stroke="#e5e7eb" strokeWidth="1" />
+                ))}
+                {/* revenue line */}
+                <polyline
+                  fill="none"
+                  stroke="#D63447"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  points={metrics.daily.map((d, i) => `${40 + (i * (640 / (metrics.daily.length - 1 || 1)))},${180 - (d.revenue / maxRevenue) * 150}`).join(" ")}
+                />
+                {/* orders line */}
+                <polyline
+                  fill="none"
+                  stroke="#2563EB"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  points={metrics.daily.map((d, i) => `${40 + (i * (640 / (metrics.daily.length - 1 || 1)))},${180 - (d.orders / maxOrders) * 150}`).join(" ")}
+                />
+                {/* dots revenue */}
+                {metrics.daily.map((d, i) => (
+                  <circle key={`r-${i}`} cx={40 + (i * (640 / (metrics.daily.length - 1 || 1)))} cy={180 - (d.revenue / maxRevenue) * 150} r="4" fill="#D63447" />
+                ))}
+                {/* dots orders */}
+                {metrics.daily.map((d, i) => (
+                  <circle key={`o-${i}`} cx={40 + (i * (640 / (metrics.daily.length - 1 || 1)))} cy={180 - (d.orders / maxOrders) * 150} r="4" fill="#2563EB" />
+                ))}
+                {/* x labels */}
+                {metrics.daily.map((d, i) => (
+                  <text key={`l-${i}`} x={40 + (i * (640 / (metrics.daily.length - 1 || 1)))} y={198} textAnchor="middle" fontSize="10" fill="#6b7280">
+                    {d.date.slice(5)}
+                  </text>
+                ))}
+              </svg>
+            </div>
+          </Col>
+          <Col md={4}>
+            <div className="chart-card">
+              <h5 className="fw-bold mb-3">Productos más vendidos</h5>
+              {metrics.top_products.length === 0 && <p className="text-muted small">Sin datos aún.</p>}
+              {metrics.top_products.map((p, i) => {
+                const maxQ = Math.max(...metrics.top_products.map((x) => x.quantity), 1);
+                return (
+                  <div key={i} className="mb-3">
+                    <div className="d-flex justify-content-between small mb-1">
+                      <span className="fw-semibold">{p.name}</span>
+                      <span className="text-muted">{p.quantity}</span>
+                    </div>
+                    <div className="chart-bar">
+                      <div className="chart-fill" style={{ width: `${(p.quantity / maxQ) * 100}%` }}></div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </Col>
+        </Row>
+
+        <Row className="g-3">
+          <Col md={7}>
+            <div className="chart-card">
+              <h5 className="fw-bold mb-3">Pedidos activos recientes</h5>
+              {counts.activeOrders.length === 0 && <p className="text-muted small">No hay pedidos activos.</p>}
+              <Table hover responsive className="mb-0" size="sm">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Cliente</th>
+                    <th>Tipo</th>
+                    <th>Estado</th>
+                    <th>Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {counts.activeOrders.slice(0, 8).map((o) => (
+                    <tr key={o.id} className="recent-row">
+                      <td className="fw-bold">{o.id}</td>
+                      <td>{o.customer_name}</td>
+                      <td><Badge bg="light" text="dark">{o.order_type}</Badge></td>
+                      <td>
+                        <Badge bg={o.status === "FINALIZADO" ? "success" : "warning"} text={o.status === "FINALIZADO" ? "light" : "dark"}>
+                          {o.status}
+                        </Badge>
+                      </td>
+                      <td className="fw-bold">S/ {o.total_amount}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
+            </div>
+          </Col>
+          <Col md={5}>
+            <div className="chart-card">
+              <h5 className="fw-bold mb-3">Estado de pedidos</h5>
+              {[
+                { label: "Completados", value: metrics.completed_orders, color: "#16A34A" },
+                { label: "Activos", value: metrics.active_orders, color: "#D97706" },
+                { label: "Cancelados", value: metrics.cancelled_orders, color: "#DC2626" },
+              ].map((s, i) => {
+                const total = metrics.total_orders || 1;
+                return (
+                  <div key={i} className="mb-3">
+                    <div className="d-flex justify-content-between small mb-1">
+                      <span className="fw-semibold">{s.label}</span>
+                      <span className="text-muted">{s.value}</span>
+                    </div>
+                    <div className="chart-bar">
+                      <div className="chart-fill" style={{ width: `${(s.value / total) * 100}%`, background: s.color }}></div>
+                    </div>
+                  </div>
+                );
+              })}
+              <div className="mt-3 pt-3 border-top small text-muted">
+                Total de pedidos: <strong className="text-dark">{metrics.total_orders}</strong>
+              </div>
+            </div>
+          </Col>
+        </Row>
+      </Container>
     </div>
   );
 }
-
-const styles = {
-  container: {
-    width: "100%",
-    maxWidth: "1200px",
-    margin: "0 auto",
-    padding: "24px 16px",
-    fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
-    boxSizing: "border-box",
-  },
-  header: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: "32px",
-    flexWrap: "wrap",
-    gap: "16px",
-  },
-  title: {
-    fontSize: "1.75rem",
-    fontWeight: "700",
-    margin: 0,
-    color: "#0F172A",
-    letterSpacing: "-0.025em",
-  },
-  subtitle: {
-    margin: "4px 0 0 0",
-    fontSize: "0.875rem",
-    color: "#64748B",
-  },
-  counterBadge: {
-    backgroundColor: "#EFF6FF",
-    color: "#2563EB",
-    border: "1px solid #BFDBFE",
-    padding: "6px 14px",
-    borderRadius: "9999px",
-    fontSize: "0.875rem",
-    fontWeight: "600",
-  },
-  grid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
-    gap: "24px",
-  },
-  card: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: "16px",
-    border: "1px solid #E2E8F0",
-    padding: "20px",
-    boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)",
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "space-between",
-    animation: "fadeIn 0.35s ease forwards",
-  },
-  cardHeader: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    paddingBottom: "12px",
-    borderBottom: "1px solid #F1F5F9",
-    marginBottom: "12px",
-  },
-  orderNumber: {
-    fontSize: "1.125rem",
-    fontWeight: "700",
-    color: "#0F172A",
-    display: "block",
-  },
-  orderType: {
-    fontSize: "0.75rem",
-    textTransform: "uppercase",
-    letterSpacing: "0.05em",
-    color: "#64748B",
-    fontWeight: "600",
-  },
-  statusBadge: {
-    padding: "4px 10px",
-    borderRadius: "8px",
-    fontSize: "0.75rem",
-    fontWeight: "600",
-    border: "1px solid",
-    textTransform: "capitalize",
-  },
-  customerSection: {
-    marginBottom: "16px",
-    display: "flex",
-    flexDirection: "column",
-    gap: "4px",
-  },
-  infoRow: {
-    display: "flex",
-    justifyContent: "space-between",
-    fontSize: "0.875rem",
-  },
-  infoLabel: {
-    color: "#64748B",
-  },
-  infoValue: {
-    fontWeight: "500",
-    color: "#334155",
-  },
-  itemsSection: {
-    backgroundColor: "#F8FAFC",
-    borderRadius: "12px",
-    padding: "12px",
-    marginBottom: "16px",
-    border: "1px solid #F1F5F9",
-  },
-  itemsTitle: {
-    margin: "0 0 8px 0",
-    fontSize: "0.75rem",
-    textTransform: "uppercase",
-    letterSpacing: "0.05em",
-    color: "#64748B",
-    fontWeight: "700",
-  },
-  itemList: {
-    listStyle: "none",
-    padding: 0,
-    margin: 0,
-    display: "flex",
-    flexDirection: "column",
-    gap: "6px",
-  },
-  itemRow: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    fontSize: "0.875rem",
-  },
-  itemDetails: {
-    color: "#334155",
-  },
-  itemQty: {
-    color: "#2563EB",
-  },
-  itemSubtotal: {
-    color: "#64748B",
-    fontSize: "0.8125rem",
-  },
-  totalRow: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingTop: "8px",
-    marginBottom: "16px",
-    borderTop: "1px solid #E2E8F0",
-  },
-  totalLabel: {
-    fontSize: "0.875rem",
-    fontWeight: "600",
-    color: "#0F172A",
-  },
-  totalAmount: {
-    fontSize: "1.25rem",
-    fontWeight: "700",
-    color: "#0F172A",
-  },
-  actions: {
-    display: "flex",
-    gap: "8px",
-  },
-  button: {
-    flex: 1,
-    padding: "10px 14px",
-    borderRadius: "10px",
-    fontWeight: "600",
-    fontSize: "0.875rem",
-    cursor: "pointer",
-    outline: "none",
-  },
-  buttonCancel: {
-    flex: "0 0 auto",
-  },
-  centerContainer: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: "64px 16px",
-    fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
-  },
-  spinner: {
-    width: "40px",
-    height: "40px",
-    border: "3px solid #E2E8F0",
-    borderTop: "3px solid #2563EB",
-    borderRadius: "50%",
-    animation: "spin 0.8s linear infinite",
-  },
-  loadingText: {
-    marginTop: "16px",
-    color: "#64748B",
-    fontSize: "0.95rem",
-  },
-  errorCard: {
-    backgroundColor: "#FEF2F2",
-    border: "1px solid #FECACA",
-    padding: "24px 32px",
-    borderRadius: "16px",
-    textAlign: "center",
-  },
-  errorText: {
-    color: "#991B1B",
-    fontWeight: "600",
-    margin: "8px 0 0 0",
-  },
-  emptyState: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: "16px",
-    border: "1px solid #E2E8F0",
-    padding: "48px 24px",
-    textAlign: "center",
-    maxWidth: "400px",
-    margin: "40px auto 0 auto",
-  },
-  emptyIcon: {
-    fontSize: "3rem",
-    marginBottom: "12px",
-  },
-  emptyTitle: {
-    fontSize: "1.125rem",
-    fontWeight: "700",
-    margin: "0 0 4px 0",
-    color: "#0F172A",
-  },
-  emptySubtitle: {
-    fontSize: "0.875rem",
-    color: "#64748B",
-    margin: 0,
-  },
-};
-
-export default Dashboard;

@@ -1,13 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Container, Row, Col, Form, Button, Card, Alert } from "react-bootstrap";
-import { FaCommentAlt, FaUser, FaPhoneAlt, FaPaperPlane, FaCheckCircle, FaStar, FaShieldAlt } from "react-icons/fa";
+import { FaCommentAlt, FaUser, FaPhoneAlt, FaPaperPlane, FaCheckCircle, FaStar, FaShieldAlt, FaHeart } from "react-icons/fa";
 import { useComentarios } from "../hooks/useComentarios";
+import { API_HOST } from "../services/api";
 import { HeroSection } from "../components/Herosection";
 
 const feedbackStyles = `
   .feedback-wrapper {
-    max-width: 1140px;
-    margin: -50px auto 0 auto;
+    max-width: 1180px;
+    margin: -60px auto 0 auto;
     position: relative;
     z-index: 10;
     padding: 0 15px 80px 15px;
@@ -15,35 +16,57 @@ const feedbackStyles = `
   .feedback-card {
     background: #ffffff;
     border: none;
-    border-radius: 16px;
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
+    border-radius: 24px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.08);
     padding: 45px 40px;
+    transition: transform 0.2s ease;
   }
   .form-control:focus, .form-control:active {
-    border-color: #dc3545;
-    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+    border-color: #D63447;
+    box-shadow: 0 0 0 0.2rem rgba(214,52,71,0.2);
   }
   .star-rating {
-    font-size: 2rem;
+    font-size: 2.2rem;
     color: #e2e8f0;
     cursor: pointer;
-    transition: color 0.2s ease;
+    transition: color 0.2s ease, transform 0.2s ease;
   }
-  .star-rating.active {
-    color: #f6ad55;
-  }
+  .star-rating:hover { transform: scale(1.15); }
+  .star-rating.active { color: #f6ad55; }
   .info-side-card {
-    background: #ffffff;
+    background: linear-gradient(180deg, #ffffff 0%, #fff7f7 100%);
     border: none;
-    border-radius: 16px;
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
+    border-radius: 24px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.08);
     padding: 45px 40px;
     height: 100%;
     display: flex;
     flex-direction: column;
     justify-content: center;
+    border: 1px solid rgba(214,52,71,0.08);
+  }
+  .info-icon {
+    width: 48px; height: 48px; border-radius: 14px;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: #FEE2E2; color: #D63447; font-size: 1.2rem; margin-right: 14px;
+  }
+  @media (max-width: 768px) {
+    .feedback-card, .info-side-card { padding: 30px 24px; }
   }
 `;
+
+function timeAgo(dateString) {
+  try {
+    const diff = (Date.now() - new Date(dateString.replace(" ", "T")).getTime()) / 1000;
+    if (diff < 60) return "hace unos segundos";
+    if (diff < 3600) return `hace ${Math.floor(diff / 60)} min`;
+    if (diff < 86400) return `hace ${Math.floor(diff / 3600)} h`;
+    if (diff < 2592000) return `hace ${Math.floor(diff / 86400)} días`;
+    return new Date(dateString.replace(" ", "T")).toLocaleDateString("es-PE");
+  } catch {
+    return dateString;
+  }
+}
 
 export default function Feedback() {
   const [formData, setFormData] = useState({
@@ -54,7 +77,18 @@ export default function Feedback() {
   });
   const [hoverRating, setHoverRating] = useState(0);
   const [validationError, setValidationError] = useState("");
+  const [comentarios, setComentarios] = useState([]);
   const { enviarComentario, enviando, error, exito } = useComentarios();
+
+  const fetchComentarios = () => {
+    fetch(`${API_HOST}/api/public/feedbacks`)
+      .then((r) => r.json())
+      .then((d) => { if (d.status === "success") setComentarios(d.data || []); })
+      .catch(() => {});
+  };
+
+  useEffect(() => { fetchComentarios(); }, []);
+  useEffect(() => { if (exito) fetchComentarios(); }, [exito]);
 
   const handleChange = (e) => {
     setFormData({
@@ -82,11 +116,11 @@ export default function Feedback() {
     <div style={{ minHeight: "100vh", backgroundColor: "#f8f9fa" }}>
       <style>{feedbackStyles}</style>
 
-      <HeroSection 
+      <HeroSection
         title="Buzón de Opiniones y Mejoras"
         subtitle="Su retroalimentación es fundamental para seguir brindándole el mejor servicio"
-        gradient="linear-gradient(135deg, #dc3545 0%, #a71d2a 100%)"
-        padding="70px 0 110px 0"
+        gradient="linear-gradient(135deg, #D63447 0%, #a82333 100%)"
+        padding="70px 0 120px 0"
         textAlign="center"
       />
 
@@ -186,26 +220,58 @@ export default function Feedback() {
                 Cada reseña y sugerencia es revisada directamente por nuestro equipo de calidad para optimizar nuestros procesos, desde la cocina hasta la entrega a domicilio.
               </p>
               <div className="d-flex align-items-start mb-4">
-                <div className="bg-danger bg-opacity-10 p-3 rounded-circle text-danger me-3 flex-shrink-0">
-                  <FaStar className="fs-5" />
+                <div className="info-icon">
+                  <FaStar />
                 </div>
                 <div>
                   <h6 className="fw-bold text-dark mb-1">Compromiso de Calidad</h6>
                   <p className="text-muted small mb-0" style={{ lineHeight: "1.6" }}>Trabajamos cada día para ofrecerle el mejor pollo a la brasa del mercado.</p>
                 </div>
               </div>
-              <div className="d-flex align-items-start">
-                <div className="bg-danger bg-opacity-10 p-3 rounded-circle text-danger me-3 flex-shrink-0">
-                  <FaCommentAlt className="fs-5" />
+              <div className="d-flex align-items-start mb-4">
+                <div className="info-icon">
+                  <FaCommentAlt />
                 </div>
                 <div>
                   <h6 className="fw-bold text-dark mb-1">Atención Personalizada</h6>
                   <p className="text-muted small mb-0" style={{ lineHeight: "1.6" }}>Si requiere soporte inmediato con un pedido, contáctenos directamente por teléfono.</p>
                 </div>
               </div>
+              <div className="d-flex align-items-start">
+                <div className="info-icon">
+                  <FaHeart />
+                </div>
+                <div>
+                  <h6 className="fw-bold text-dark mb-1">Gracias por su confianza</h6>
+                  <p className="text-muted small mb-0" style={{ lineHeight: "1.6" }}>Su experiencia nos ayuda a mejorar día a día.</p>
+                </div>
+              </div>
             </div>
           </Col>
         </Row>
+
+        <div className="mt-5">
+          <h3 className="fw-bold mb-3">Opiniones de nuestros clientes</h3>
+          {comentarios.length === 0 && <p className="text-muted">Aún no hay comentarios.</p>}
+          <Row className="g-3">
+            {comentarios.map((c) => (
+              <Col md={6} key={c.id}>
+                <Card className="border-0 shadow-sm p-3 h-100" style={{ borderRadius: 16 }}>
+                  <div className="d-flex justify-content-between align-items-start mb-2">
+                    <div className="fw-bold">{c.customer_name}</div>
+                    <div className="text-warning">
+                      {[1, 2, 3, 4, 5].map((s) => (
+                        <i key={s} className={`bi ${s <= (c.rating || 5) ? "bi-star-fill" : "bi-star"} me-1`}></i>
+                      ))}
+                    </div>
+                  </div>
+                  <p className="text-muted mb-2" style={{ fontSize: "0.9rem", fontStyle: "italic" }}>"{c.message}"</p>
+                  <div className="text-muted small">{timeAgo(c.created_at)}</div>
+                </Card>
+              </Col>
+            ))}
+          </Row>
+        </div>
       </div>
     </div>
   );

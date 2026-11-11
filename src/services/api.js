@@ -1,1 +1,1 @@
-export const API_HOST = "https://mvp-back-6lgs.onrender.com";
+export const API_HOST = "http://localhost:10000";

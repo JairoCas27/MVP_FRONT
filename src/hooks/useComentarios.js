@@ -20,7 +20,8 @@ export function useComentarios() {
         body: JSON.stringify({
           customer_name: comentarioData.nombre,
           phone: comentarioData.celular,
-          message: comentarioData.mensaje
+          message: comentarioData.mensaje,
+          rating: comentarioData.calificacion || 5
         })
       });
 

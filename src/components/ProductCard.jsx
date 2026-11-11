@@ -1,98 +1,140 @@
 import React from "react";
-import { Card, Button, Row, Col } from "react-bootstrap";
+import { Button } from "react-bootstrap";
+import { Link } from "react-router-dom";
 
-const customStyles = `
-  .pro-card-container {
-    transition: all 0.3s ease;
-    background: #ffffff;
-    border-radius: 8px;
-    border: 1px solid #e8e8e8;
+const styles = `
+  .pc-card {
+    background: linear-gradient(180deg, #ffffff 0%, #fff7f7 100%);
+    border-radius: 22px;
     overflow: hidden;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.09);
+    border: 1px solid rgba(214,52,71,0.08);
+    transition: transform 0.28s ease, box-shadow 0.28s ease;
     height: 100%;
+    display: flex;
+    flex-direction: column;
   }
-  .pro-card-container:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
-    border-color: #dcdcdc;
+  .pc-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 18px 40px rgba(0,0,0,0.14);
   }
-  .pro-btn-red {
-    transition: all 0.2s ease;
-    background-color: #d63346 !important;
-    color: #ffffff !important;
-    border-radius: 4px;
+  .pc-img-wrap {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    background: #f3f4f6;
+  }
+  .pc-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.45s ease, filter 0.3s ease;
+  }
+  .pc-card:hover .pc-img {
+    transform: scale(1.08);
+    filter: brightness(0.65);
+  }
+  .pc-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,0.25);
+    opacity: 0;
+    transition: opacity 0.25s ease;
+    pointer-events: none;
+  }
+  .pc-img-wrap:hover .pc-overlay {
+    opacity: 1;
+  }
+  .pc-overlay span {
+    color: #fff;
     font-weight: 700;
-    border: none;
+    font-size: 0.95rem;
+    padding: 8px 16px;
+    border-radius: 999px;
+    background: rgba(214,52,71,0.9);
+    box-shadow: 0 4px 14px rgba(0,0,0,0.3);
   }
-  .pro-btn-red:hover {
-    background-color: #c0293a !important;
+  .pc-price {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    background: linear-gradient(135deg, #D63447, #a82333);
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.95rem;
+    padding: 6px 14px;
+    border-radius: 999px;
+    box-shadow: 0 6px 16px rgba(214,52,71,0.4);
   }
-  .text-truncate-2 {
+  .pc-body {
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+  }
+  .pc-title {
+    font-weight: 800;
+    font-size: 1.05rem;
+    color: #111827;
+    margin-bottom: 6px;
+    letter-spacing: 0.3px;
+  }
+  .pc-desc {
+    color: #6b7280;
+    font-size: 0.85rem;
+    margin-bottom: 14px;
+    flex: 1;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
-  @media (max-width: 768px) {
-    .mobile-title { font-size: 0.85rem !important; margin-bottom: 2px !important; }
-    .mobile-desc { font-size: 0.65rem !important; margin-bottom: 6px !important; }
-    .mobile-price { font-size: 1rem !important; margin-bottom: 6px !important; }
-    .mobile-btn { font-size: 0.8rem !important; padding: 4px 0 !important; }
+  .pc-btn {
+    background: linear-gradient(135deg, #D63447 0%, #a82333 100%);
+    color: #fff;
+    border: none;
+    border-radius: 14px;
+    padding: 12px 0;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    box-shadow: 0 6px 16px rgba(214,52,71,0.3);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
   }
+  .pc-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 22px rgba(214,52,71,0.45);
+  }
+  .pc-btn:active { transform: scale(0.98); }
 `;
 
 export function ProductCard({ producto, onAgregar }) {
   return (
     <>
-      <style>{customStyles}</style>
-      <Card className="pro-card-container p-2 p-md-3">
-        <Row className="g-2 g-md-3 h-100 align-items-center">
-          <Col xs={5}>
-            <div style={{ aspectRatio: "892 / 800", position: "relative" }}>
-              <Card.Img 
-                src={producto.imagen} 
-                style={{ 
-                  width: "100%", 
-                  height: "100%", 
-                  objectFit: "contain",
-                  position: "absolute",
-                  top: 0,
-                  left: 0
-                }} 
-              />
+      <style>{styles}</style>
+      <div className="pc-card">
+        <div className="pc-img-wrap">
+          <Link to={`/producto/${producto.id}`}>
+            <img src={producto.imagen} alt={producto.nombre} className="pc-img" />
+            <div className="pc-overlay">
+              <span><i className="bi bi-eye me-2"></i>Ver detalles</span>
             </div>
-          </Col>
-          <Col xs={7} className="d-flex flex-column h-100 text-center justify-content-center">
-            <div className="mb-auto">
-              <h6 
-                className="fw-bold text-dark mb-2 text-uppercase mobile-title" 
-                style={{ fontSize: "1rem", lineHeight: "1.2" }}
-              >
-                {producto.nombre}
-              </h6>
-              <p 
-                className="text-muted mb-3 text-truncate-2 text-uppercase mobile-desc mx-auto" 
-                style={{ fontSize: "0.75rem", lineHeight: "1.3", maxWidth: "95%" }}
-              >
-                {producto.descripcion}
-              </p>
-            </div>
-            <div className="mt-auto">
-              <span 
-                className="fw-bolder text-dark d-block mb-2 mobile-price" 
-                style={{ fontSize: "1.2rem" }}
-              >
-                S/ {producto.precio.toFixed(2)}
-              </span>
-              <Button 
-                onClick={() => onAgregar(producto)}
-                className="pro-btn-red w-100 py-2 mobile-btn"
-              >
-                Agregar
-              </Button>
-            </div>
-          </Col>
-        </Row>
-      </Card>
+          </Link>
+          <span className="pc-price">S/ {producto.precio.toFixed(2)}</span>
+        </div>
+        <div className="pc-body">
+          <Link to={`/producto/${producto.id}`} className="text-decoration-none">
+            <div className="pc-title text-uppercase">{producto.nombre}</div>
+          </Link>
+          <div className="pc-desc">{producto.descripcion}</div>
+          <button className="pc-btn w-100" onClick={() => onAgregar(producto)}>
+            <i className="bi bi-cart-plus me-2"></i>Agregar
+          </button>
+        </div>
+      </div>
     </>
   );
 }

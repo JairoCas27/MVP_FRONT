@@ -17,6 +17,12 @@ export default function PublicLayout() {
     localStorage.setItem("carrito", JSON.stringify(carrito));
   }, [carrito]);
 
+  useEffect(() => {
+    const clear = () => setCarrito([]);
+    window.addEventListener("cartClear", clear);
+    return () => window.removeEventListener("cartClear", clear);
+  }, [setCarrito]);
+
   return (
     <div className="d-flex flex-column min-vh-100">
       <MyNavbar />

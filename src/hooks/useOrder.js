@@ -42,11 +42,12 @@ export function useCreateOrder() {
     setLoading(true);
     setError(null);
     try {
+      const token = localStorage.getItem("clientToken");
+      const headers = { "Content-Type": "application/json" };
+      if (token) headers.Authorization = `Bearer ${token}`;
       const response = await fetch(`${API_HOST}/api/public/orders`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
+        headers,
         body: JSON.stringify(orderPayload)
       });
 
