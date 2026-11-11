@@ -21,7 +21,7 @@ const homeStyles = `
     inset: 0;
     background:
       linear-gradient(110deg, rgba(15,15,15,0.72) 0%, rgba(15,15,15,0.4) 55%, rgba(214,52,71,0.32) 100%),
-      url('https://www.bravazo.net/wp-content/uploads/2026/05/Receta-de-Pollo-a-la-Brasa-Casero.webp') center/cover no-repeat;
+      url('https://upload.wikimedia.org/wikipedia/commons/8/81/Pollo_a_la_brasa.jpg') center/cover no-repeat;
     transform-origin: center center;
     will-change: transform;
     z-index: 0;
@@ -250,7 +250,7 @@ const homeStyles = `
 `;
 
 const CATEGORIES = [
-  { name: "Pollos y Combos", img: "https://www.bravazo.net/wp-content/uploads/2026/05/Receta-de-Pollo-a-la-Brasa-Casero.webp", href: "#menu" },
+  { name: "Pollos y Combos", img: "https://upload.wikimedia.org/wikipedia/commons/8/81/Pollo_a_la_brasa.jpg", href: "#menu" },
   { name: "Piqueos", img: "https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?auto=format&fit=crop&w=600&q=80", href: "#menu" },
   { name: "Ensaladas", img: "https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=600&q=80", href: "#menu" },
   { name: "Bebidas", img: "https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&w=600&q=80", href: "#menu" },
@@ -319,7 +319,7 @@ export default function Home() {
           style={{
             position: "absolute",
             inset: "-10% -5% -10% -5%",
-            backgroundImage: "url('https://www.bravazo.net/wp-content/uploads/2026/05/Receta-de-Pollo-a-la-Brasa-Casero.webp')",
+            backgroundImage: "url('https://upload.wikimedia.org/wikipedia/commons/8/81/Pollo_a_la_brasa.jpg')",
             backgroundSize: "cover",
             backgroundPosition: "center",
             transform: `translateY(${scrollY * 0.3}px) scale(${1 + Math.min(scrollY / (window.innerHeight || 1), 1) * 0.35})`,
