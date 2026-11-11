@@ -1,1 +1,2 @@
-export const API_HOST = (import.meta.env.VITE_API_HOST || "http://localhost:10000").replace(/\/+$/, "");
+const _raw = (import.meta.env.VITE_API_HOST || "").trim();
+export const API_HOST = _raw ? _raw.replace(/\/+$/, "") : "http://localhost:10000";
