@@ -28,7 +28,7 @@ function MyNavbar() {
   const refreshClient = () => {
     const token = localStorage.getItem("clientToken");
     if (token) {
-      fetch("http://localhost:10000/api/auth/client/me", { headers: { Authorization: `Bearer ${token}` } })
+      fetch(`${API_HOST}/api/auth/client/me`, { headers: { Authorization: `Bearer ${token}` } })
         .then((r) => r.json())
         .then((d) => { if (d.status === "success") { setClientUser(d.data); localStorage.setItem("clientUser", JSON.stringify(d.data)); } })
         .catch(() => {});
