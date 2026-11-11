@@ -319,7 +319,7 @@ export default function Home() {
           style={{
             position: "absolute",
             inset: "-10% -5% -10% -5%",
-            backgroundImage: "url('https://upload.wikimedia.org/wikipedia/commons/8/81/Pollo_a_la_brasa.jpg')",
+            backgroundImage: "url('https://www.bravazo.net/wp-content/uploads/2026/05/Receta-de-Pollo-a-la-Brasa-Casero.webp')",
             backgroundSize: "cover",
             backgroundPosition: "center",
             transform: `translateY(${scrollY * 0.3}px) scale(${1 + Math.min(scrollY / (window.innerHeight || 1), 1) * 0.35})`,
