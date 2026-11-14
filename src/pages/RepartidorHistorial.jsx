@@ -83,22 +83,24 @@ export default function RepartidorHistorial() {
         </div>
 
         <Row className="g-3 mb-4">
-          <Col md={4}>
+          <Col xs={6} md={6}>
             <div className="hist-kpi">
               <div className="text-muted small">Entregas completadas</div>
               <h3 className="fw-bold mb-0">{filtered.length}</h3>
             </div>
           </Col>
-          <Col md={4}>
-            <div className="hist-kpi">
-              <div className="text-muted small">Total recibido</div>
-              <h3 className="fw-bold mb-0 text-success">S/ {totalReceived.toFixed(2)}</h3>
-            </div>
-          </Col>
-          <Col md={4}>
+          <Col xs={6} md={6}>
             <div className="hist-kpi">
               <div className="text-muted small">Ticket promedio</div>
               <h3 className="fw-bold mb-0">S/ {avgTicket.toFixed(2)}</h3>
+            </div>
+          </Col>
+        </Row>
+        <Row className="g-3 mb-4">
+          <Col xs={12} md={6} className="mx-auto">
+            <div className="hist-kpi">
+              <div className="text-muted small">Total recibido</div>
+              <h3 className="fw-bold mb-0 text-success">S/ {totalReceived.toFixed(2)}</h3>
             </div>
           </Col>
         </Row>
