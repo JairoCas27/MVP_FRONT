@@ -30,16 +30,30 @@ export default function AdminLayout() {
             top: 16,
             left: 16,
             zIndex: 1100,
-            width: 44,
-            height: 44,
-            borderRadius: 12,
-            border: "none",
-            background: "#181515",
+            width: 48,
+            height: 48,
+            borderRadius: 14,
+            border: "1px solid rgba(255,255,255,0.12)",
+            background: "linear-gradient(135deg, #1a1210 0%, #2b1f1a 100%)",
             color: "#fff",
-            boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
+            boxShadow: "0 8px 24px rgba(0,0,0,0.35), 0 0 0 1px rgba(214,52,71,0.2)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            cursor: "pointer",
+            transition: "transform 0.2s ease, box-shadow 0.2s ease",
+            backdropFilter: "blur(8px)",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = "translateY(-2px) scale(1.05)";
+            e.currentTarget.style.boxShadow = "0 12px 28px rgba(214,52,71,0.45)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = "translateY(0) scale(1)";
+            e.currentTarget.style.boxShadow = "0 8px 24px rgba(0,0,0,0.35), 0 0 0 1px rgba(214,52,71,0.2)";
           }}
         >
-          <i className="bi bi-list fs-4"></i>
+          <i className="bi bi-list" style={{ fontSize: "1.4rem" }}></i>
         </button>
       )}
 
