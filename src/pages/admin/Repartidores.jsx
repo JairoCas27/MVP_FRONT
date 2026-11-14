@@ -160,13 +160,9 @@ export default function Repartidores() {
               <tr key={d.id}>
                 <td className="fw-bold text-muted">#{d.id}</td>
                 <td>
-                  {d.photo ? (
-                    <img src={d.photo.startsWith("http") ? d.photo : `${API_HOST}${d.photo}`} alt={d.name} style={{ width: 42, height: 42, borderRadius: "50%", objectFit: "cover", border: "2px solid #D63447" }} />
-                  ) : (
-                    <span style={{ width: 42, height: 42, borderRadius: "50%", background: "linear-gradient(135deg, #D63447, #a82333)", color: "#fff", display: "inline-flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: "0.8rem", border: "2px solid #D63447" }}>
-                      {d.name ? d.name.trim().split(/\s+/).map((p) => p.charAt(0)).slice(0, 2).join("").toUpperCase() : "U"}
-                    </span>
-                  )}
+                  <span style={{ width: 42, height: 42, borderRadius: "50%", background: "linear-gradient(135deg, #D63447, #a82333)", color: "#fff", display: "inline-flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: "0.8rem", border: "2px solid #D63447" }}>
+                    {d.name ? d.name.trim().split(/\s+/).map((p) => p.charAt(0)).slice(0, 2).join("").toUpperCase() : "U"}
+                  </span>
                 </td>
                 <td className="fw-semibold">{d.name}</td>
                 <td>{d.username}</td>
