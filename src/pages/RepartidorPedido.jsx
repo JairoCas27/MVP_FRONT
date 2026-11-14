@@ -119,7 +119,7 @@ export default function RepartidorPedido() {
 
         <Row className="g-3 mb-4">
           {infoItems.map((info, idx) => (
-            <Col key={idx} xs={info.span ? 12 : 6} md={info.span ? 12 : 3} style={{ flex: "1 1 0", minWidth: 0 }}>
+            <Col key={idx} xs={info.span ? 12 : 6} md={info.span ? 12 : 3}>
               <div className="det-card text-center" style={{ height: "100%", display: "flex", flexDirection: "column", justifyContent: "center", minHeight: 70 }}>
                 <div className="text-muted small mb-1">{info.label}</div>
                 <div className="fw-bold" style={{ fontSize: "0.95rem", wordBreak: "break-word" }}>{info.value}</div>
