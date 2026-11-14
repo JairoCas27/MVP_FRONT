@@ -85,7 +85,7 @@ export default function Menu() {
           />
         </div>
 
-        <div className="d-flex gap-2 mb-4" style={{ overflowX: "auto", paddingBottom: 8, flexWrap: "wrap" }}>
+        <div className="d-flex gap-2 mb-4" style={{ overflowX: "auto", paddingBottom: 8, flexWrap: "nowrap" }}>
           {["Todos", "Pollo", "Papas", "Ensalada", "Gaseosa"].map((f) => (
             <button
               key={f}
