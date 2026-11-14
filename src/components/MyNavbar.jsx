@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Button, Offcanvas } from "react-bootstrap";
 import { toast } from "react-toastify";
 import Container from 'react-bootstrap/Container';
@@ -17,6 +17,12 @@ function MyNavbar() {
     try { return JSON.parse(localStorage.getItem("clientUser") || "null"); } catch { return null; }
   });
   const [showProfile, setShowProfile] = useState(false);
+  const location = useLocation();
+
+  useEffect(() => {
+    setShowProfile(false);
+    setExpanded(false);
+  }, [location.pathname]);
 
   const getInitials = (name) => {
     if (!name) return "U";
