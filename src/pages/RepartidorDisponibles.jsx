@@ -111,19 +111,21 @@ export default function RepartidorDisponibles() {
         </div>
 
         <Row className="g-3 mb-3">
-          <Col md={4}>
+          <Col xs={6} md={6}>
             <Card className="p-3 border-0 shadow-sm">
               <div className="text-muted small">Disponibles</div>
               <h3 className="fw-bold mb-0">{available.length}</h3>
             </Card>
           </Col>
-          <Col md={4}>
+          <Col xs={6} md={6}>
             <Card className="p-3 border-0 shadow-sm">
               <div className="text-muted small">Filtrados</div>
               <h3 className="fw-bold mb-0">{filtered.length}</h3>
             </Card>
           </Col>
-          <Col md={4}>
+        </Row>
+        <Row className="g-3 mb-3">
+          <Col xs={12} md={6} className="mx-auto">
             <Card className="p-3 border-0 shadow-sm">
               <div className="text-muted small">Monto total disponible</div>
               <h3 className="fw-bold mb-0 text-danger">S/ {available.reduce((s, d) => s + (d.total_amount || 0), 0).toFixed(2)}</h3>
