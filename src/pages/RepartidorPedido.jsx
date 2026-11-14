@@ -11,11 +11,12 @@ const styles = `
     box-shadow: 0 12px 32px rgba(0,0,0,0.12);
   }
   .det-card {
-    background: #fff; border-radius: 20px; padding: 24px;
+    background: #fff; border-radius: 20px; padding: 20px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.07); border: 1px solid rgba(0,0,0,0.05);
     height: 100%;
     display: flex;
     flex-direction: column;
+    justify-content: center;
   }
   .prod-row {
     display: flex; align-items: center; gap: 14px; padding: 12px;
@@ -24,12 +25,6 @@ const styles = `
   }
   .prod-row:hover { transform: translateX(4px); }
   .prod-img { width: 64px; height: 64px; border-radius: 12px; object-fit: cover; }
-  .info-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f1f5f9; }
-  .info-row:last-child { border-bottom: none; }
-  @media (max-width: 768px) {
-    .det-card { padding: 16px; }
-    .prod-img { width: 48px; height: 48px; }
-  }
 `;
 
 export default function RepartidorPedido() {
@@ -93,6 +88,15 @@ export default function RepartidorPedido() {
     ? `https://www.openstreetmap.org/export/embed.html?bbox=${dest.lon - 0.01},${dest.lat - 0.01},${dest.lon + 0.01},${dest.lat + 0.01}&layer=mapnik&marker=${dest.lat},${dest.lon}`
     : null;
 
+  const infoItems = [
+    { label: "Cliente", value: order.customer_name },
+    { label: "Teléfono", value: order.customer_phone },
+    { label: "Tipo", value: order.order_type },
+    { label: "Pago", value: order.payment_type },
+    { label: "Creado", value: order.created_at },
+    { label: "Total", value: `S/ ${order.total_amount.toFixed(2)}` },
+  ];
+
   return (
     <div className="det-wrap">
       <style>{styles}</style>
@@ -113,16 +117,34 @@ export default function RepartidorPedido() {
           </div>
         </div>
 
-        <Row className="g-4 align-items-stretch">
-          <Col md={6} className="d-flex">
-            <div className="det-card w-100">
-              <h5 className="fw-bold mb-3"><i className="bi bi-person me-2 text-danger"></i>Cliente</h5>
-              <div className="info-row"><span className="text-muted">Nombre</span><span className="fw-bold">{order.customer_name}</span></div>
-              <div className="info-row"><span className="text-muted">Teléfono</span><span className="fw-bold">{order.customer_phone}</span></div>
-              <div className="info-row"><span className="text-muted">Tipo</span><span className="fw-bold">{order.order_type}</span></div>
-              <div className="info-row"><span className="text-muted">Pago</span><span className="fw-bold">{order.payment_type}</span></div>
-              <div className="info-row"><span className="text-muted">Creado</span><span className="fw-bold">{order.created_at}</span></div>
-              <div className="info-row"><span className="text-muted">Total</span><span className="fw-bold text-danger fs-5">S/ {order.total_amount.toFixed(2)}</span></div>
+        <Row className="g-3 mb-4">
+          {infoItems.map((info, idx) => (
+            <Col key={idx} xs={info.label === "Total" ? 12 : 6} md={info.label === "Total" ? 12 : 3} style={{ flex: "1 1 0", minWidth: 0 }}>
+              <div className="det-card text-center">
+                <div className="text-muted small mb-1">{info.label}</div>
+                <div className="fw-bold" style={{ fontSize: "0.95rem", wordBreak: "break-word" }}>{info.value}</div>
+              </div>
+            </Col>
+          ))}
+        </Row>
+
+        <Row className="g-4">
+          <Col md={12}>
+            <div className="det-card">
+              <h5 className="fw-bold mb-3"><i className="bi bi-box-seam me-2 text-danger"></i>Productos a entregar</h5>
+              {order.items.map((it, idx) => (
+                <div key={idx} className="prod-row">
+                  <img src={it.product_image} alt={it.product_name} className="prod-img" />
+                  <div className="flex-grow-1">
+                    <div className="fw-semibold">{it.product_name}</div>
+                    {it.options && <div className="text-muted small">{it.options}</div>}
+                  </div>
+                  <div className="text-end">
+                    <div className="small text-muted">{it.quantity}x</div>
+                    <div className="fw-bold">S/ {it.subtotal.toFixed(2)}</div>
+                  </div>
+                </div>
+              ))}
               <div className="mt-3 pt-3 border-top">
                 <div className="text-muted small mb-2">Progreso de entrega</div>
                 <div className="progress" style={{ height: 8, borderRadius: 999 }}>
@@ -137,8 +159,11 @@ export default function RepartidorPedido() {
               </div>
             </div>
           </Col>
-          <Col md={6} className="d-flex">
-            <div className="det-card w-100">
+        </Row>
+
+        <Row className="g-4 mt-1">
+          <Col md={12}>
+            <div className="det-card">
               <h5 className="fw-bold mb-3"><i className="bi bi-map me-2 text-danger"></i>Seguimiento en tiempo real</h5>
               {coords && (
                 <div className="text-muted small mb-2">
@@ -164,27 +189,6 @@ export default function RepartidorPedido() {
               ) : (
                 <div className="text-center py-5 text-muted">Cargando mapa...</div>
               )}
-            </div>
-          </Col>
-        </Row>
-
-        <Row className="g-4 mt-1">
-          <Col md={12}>
-            <div className="det-card">
-              <h5 className="fw-bold mb-3"><i className="bi bi-box-seam me-2 text-danger"></i>Productos a entregar</h5>
-              {order.items.map((it, idx) => (
-                <div key={idx} className="prod-row">
-                  <img src={it.product_image} alt={it.product_name} className="prod-img" />
-                  <div className="flex-grow-1">
-                    <div className="fw-semibold">{it.product_name}</div>
-                    {it.options && <div className="text-muted small">{it.options}</div>}
-                  </div>
-                  <div className="text-end">
-                    <div className="small text-muted">{it.quantity}x</div>
-                    <div className="fw-bold">S/ {it.subtotal.toFixed(2)}</div>
-                  </div>
-                </div>
-              ))}
             </div>
           </Col>
         </Row>
