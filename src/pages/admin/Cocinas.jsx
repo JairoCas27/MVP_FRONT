@@ -30,8 +30,6 @@ export default function Cocinas() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showModal, setShowModal] = useState(false);
-  const [showDetail, setShowDetail] = useState(false);
-  const [selected, setSelected] = useState(null);
   const [search, setSearch] = useState("");
   const [form, setForm] = useState({ name: "", username: "", password: "" });
   const token = localStorage.getItem("token");
@@ -89,7 +87,6 @@ export default function Cocinas() {
         headers: { Authorization: `Bearer ${token}` },
       });
       fetchKitchens();
-      setShowDetail(false);
     } catch (e) {}
   };
 
@@ -164,9 +161,6 @@ export default function Cocinas() {
                 </td>
                 <td className="text-end">
                   <div className="d-inline-flex gap-2">
-                    <button className="action-btn" title="Ver detalles" onClick={() => setSelected(k)}>
-                      <i className="bi bi-eye"></i>
-                    </button>
                     <button className="action-btn danger" title="Eliminar" onClick={() => remove(k)}>
                       <i className="bi bi-trash"></i>
                     </button>
@@ -202,26 +196,6 @@ export default function Cocinas() {
         </Modal.Footer>
       </Modal>
 
-      <Modal show={!!selected} onHide={() => setSelected(null)} centered>
-        <Modal.Header closeButton>
-          <Modal.Title>Detalle de cocina</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          {selected && (
-            <div>
-              <div className="mb-2"><strong>Nombre:</strong> {selected.name}</div>
-              <div className="mb-2"><strong>Usuario:</strong> {selected.username}</div>
-              <div className="mb-2"><strong>Estado:</strong> {selected.is_active ? "Activo" : "Inactivo"}</div>
-              <div className="mb-2"><strong>Registrado:</strong> {selected.created_at}</div>
-              <div className="d-flex gap-2 mt-3">
-                <Button variant="outline-danger" className="rounded-pill" onClick={() => remove(selected)}>
-                  <i className="bi bi-trash me-2"></i>Eliminar cuenta
-                </Button>
-              </div>
-            </div>
-          )}
-        </Modal.Body>
-      </Modal>
     </Container>
   );
 }
