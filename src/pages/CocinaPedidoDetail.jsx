@@ -80,13 +80,13 @@ export default function CocinaPedidoDetail() {
 
         <Row className="g-3 mb-4 justify-content-center">
           {[
-            { label: "Cliente", value: order.customer_name },
-            { label: "Tipo", value: order.order_type },
-            { label: "Pago", value: order.payment_type },
-            { label: "Creado", value: order.created_at },
-            { label: "Total", value: `S/ ${order.total_amount.toFixed(2)}` },
+            { label: "Cliente", value: order.customer_name, span: false },
+            { label: "Tipo", value: order.order_type, span: false },
+            { label: "Pago", value: order.payment_type, span: false },
+            { label: "Creado", value: order.created_at, span: false },
+            { label: "Total", value: `S/ ${order.total_amount.toFixed(2)}`, span: true },
           ].map((info, idx) => (
-            <Col key={idx} xs={6} md style={{ flex: "1 1 0", minWidth: 0 }}>
+            <Col key={idx} xs={info.span ? 12 : 6} md style={{ flex: "1 1 0", minWidth: 0 }}>
               <div className="det-card text-center py-3" style={{ height: "100%", display: "flex", flexDirection: "column", justifyContent: "center", minHeight: 80 }}>
                 <div className="text-muted small mb-1">{info.label}</div>
                 <div className="fw-bold" style={{ fontSize: "0.95rem", wordBreak: "break-word" }}>{info.value}</div>
