@@ -124,19 +124,19 @@ export default function CocinaPedidos() {
         </div>
 
         <Row className="g-3 mb-3">
-          <Col md={4}>
+          <Col xs={4} md={4}>
             <Card className="p-3 border-0 shadow-sm">
               <div className="text-muted small">Pendientes</div>
               <h3 className="fw-bold mb-0 text-warning">{orders.filter((o) => o.status === "PENDIENTE").length}</h3>
             </Card>
           </Col>
-          <Col md={4}>
+          <Col xs={4} md={4}>
             <Card className="p-3 border-0 shadow-sm">
               <div className="text-muted small">En preparación</div>
               <h3 className="fw-bold mb-0 text-info">{orders.filter((o) => o.status === "PREPARANDO").length}</h3>
             </Card>
           </Col>
-          <Col md={4}>
+          <Col xs={4} md={4}>
             <Card className="p-3 border-0 shadow-sm">
               <div className="text-muted small">Listos</div>
               <h3 className="fw-bold mb-0 text-success">{orders.filter((o) => o.status === "LISTO_PARA_RECOJO").length}</h3>
