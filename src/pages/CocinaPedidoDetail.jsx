@@ -87,7 +87,7 @@ export default function CocinaPedidoDetail() {
             { label: "Total", value: `S/ ${order.total_amount.toFixed(2)}` },
           ].map((info, idx) => (
             <Col key={idx} xs={6} md style={{ flex: "1 1 0", minWidth: 0 }}>
-              <div className="det-card text-center py-3" style={{ height: "100%" }}>
+              <div className="det-card text-center py-3" style={{ height: "100%", display: "flex", flexDirection: "column", justifyContent: "center", minHeight: 80 }}>
                 <div className="text-muted small mb-1">{info.label}</div>
                 <div className="fw-bold" style={{ fontSize: "0.95rem", wordBreak: "break-word" }}>{info.value}</div>
               </div>
