@@ -10,6 +10,9 @@ const styles = `
     transition: transform 0.25s ease, box-shadow 0.25s ease;
     height: 100%;
   }
+  @media (max-width: 768px) {
+    .disp-card { padding: 16px; }
+  }
   .disp-card:hover { transform: translateY(-6px); box-shadow: 0 16px 36px rgba(0,0,0,0.12); }
   .disp-header {
     display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;

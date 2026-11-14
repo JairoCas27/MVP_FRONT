@@ -24,6 +24,11 @@ const styles = `
     box-shadow: 0 8px 24px rgba(0,0,0,0.06); border: 1px solid rgba(0,0,0,0.04);
     height: 100%;
   }
+  @media (max-width: 768px) {
+    .drv-kpi { padding: 14px; }
+    .drv-kpi .fw-bold { font-size: 1.3rem; }
+    .drv-card { padding: 16px; }
+  }
   .chart-bar { height: 10px; border-radius: 999px; background: #f1f5f9; overflow: hidden; }
   .chart-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, #D63447, #ff7a18); }
 `;
