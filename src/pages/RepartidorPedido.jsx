@@ -90,7 +90,7 @@ export default function RepartidorPedido() {
 
   const infoItems = [
     { label: "Cliente", value: order.customer_name, span: false },
-    { label: "Teléfono", value: order.customer_phone, span: false },
+    { label: "Telefono", value: order.customer_phone, span: false },
     { label: "Tipo", value: order.order_type, span: false },
     { label: "Pago", value: order.payment_type, span: false },
     { label: "Creado", value: order.created_at, span: false },
@@ -119,7 +119,7 @@ export default function RepartidorPedido() {
 
         <Row className="g-3 mb-4">
           {infoItems.map((info, idx) => (
-            <Col key={idx} xs={info.label === "Teléfono" ? 12 : (info.span ? 12 : 6)} md={info.span ? 12 : 3}>
+            <Col key={idx} xs={info.span ? 12 : 6} md={info.span ? 12 : 3}>
               <div className="det-card text-center" style={{ height: "100%", display: "flex", flexDirection: "column", justifyContent: "center", minHeight: 70 }}>
                 <div className="text-muted small mb-1">{info.label}</div>
                 <div className="fw-bold" style={{ fontSize: "0.95rem", wordBreak: "break-word" }}>{info.value}</div>
