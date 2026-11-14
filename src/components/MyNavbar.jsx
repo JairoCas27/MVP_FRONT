@@ -61,6 +61,29 @@ function MyNavbar() {
     backdropFilter: "blur(8px)",
   };
 
+  const responsiveStyles = `
+    @media (max-width: 991px) {
+      .navbar-collapse {
+        background: rgba(18, 15, 15, 0.98);
+        backdrop-filter: blur(12px);
+        border-radius: 16px;
+        margin-top: 12px;
+        padding: 16px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      }
+      .navbar-nav .nav-link {
+        padding: 12px 16px !important;
+        border-radius: 10px;
+        margin-bottom: 4px;
+        font-size: 1rem !important;
+      }
+      .navbar-nav .btn {
+        width: 100%;
+        margin-top: 8px;
+      }
+    }
+  `;
+
   const baseLinkStyle = {
     color: "#f5f5f5",
     fontWeight: "500",
@@ -82,7 +105,9 @@ function MyNavbar() {
   };
 
   return (
-    <Navbar
+    <>
+      <style>{responsiveStyles}</style>
+      <Navbar
       expand="lg"
       fixed="top"
       style={navbarStyle}
@@ -312,6 +337,7 @@ function MyNavbar() {
         </Navbar.Collapse>
       </Container>
     </Navbar>
+    </>
   );
 }
 
