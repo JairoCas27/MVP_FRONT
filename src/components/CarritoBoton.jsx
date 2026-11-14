@@ -89,7 +89,7 @@ function CarritoBoton({ carrito = [], setCarrito = () => {}, showOffcanvas, setS
         </div>
       )}
 
-      <Offcanvas show={showOffcanvas} onHide={handleClose} placement="end" style={{ width: "440px" }}>
+      <Offcanvas show={showOffcanvas} onHide={handleClose} placement="end" style={{ width: "100%", maxWidth: "440px" }}>
         <Offcanvas.Header closeButton className="border-bottom py-4 px-4" style={{ background: "linear-gradient(135deg, #fff 0%, #fff7f7 100%)" }}>
           <Offcanvas.Title className="fw-bold fs-4 d-flex align-items-center text-dark">
             <div className="rounded-circle p-2 d-flex align-items-center justify-content-center me-3" style={{ background: "linear-gradient(135deg, #D63447, #a82333)", color: "#fff", width: "48px", height: "48px", boxShadow: "0 6px 16px rgba(214,52,71,0.35)" }}>

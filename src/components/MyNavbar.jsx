@@ -101,7 +101,7 @@ function MyNavbar() {
             src={Logo}
             alt="Logo La Fogata"
             style={{
-              height: "85px",
+              height: "72px",
               width: "auto",
               objectFit: "contain",
               filter: "drop-shadow(0 2px 10px rgba(214, 52, 71, 0.3))"

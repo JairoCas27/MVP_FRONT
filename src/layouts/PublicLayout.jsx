@@ -27,7 +27,7 @@ export default function PublicLayout() {
     <div className="d-flex flex-column min-vh-100">
       <MyNavbar />
       
-      <main className="flex-grow-1" style={{ paddingTop: "115px" }}>
+      <main className="flex-grow-1" style={{ paddingTop: "96px" }}>
         <Outlet context={{ carrito, setCarrito }} />
       </main>
 
