@@ -16,7 +16,7 @@ const homeStyles = `
     color: #fff;
     overflow: hidden;
     z-index: 0;
-    padding-top: 14vh;
+    padding-top: 25vh;
   }
   .hero-bg-img {
     background-image: url('https://www.radionacional.gob.pe/sites/default/files/pollo_brasa.jpg');
