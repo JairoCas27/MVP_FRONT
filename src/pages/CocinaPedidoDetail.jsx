@@ -23,6 +23,10 @@ const styles = `
   .prod-img { width: 64px; height: 64px; border-radius: 12px; object-fit: cover; }
   .info-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f1f5f9; }
   .info-row:last-child { border-bottom: none; }
+  @media (max-width: 768px) {
+    .det-card { padding: 16px; }
+    .prod-img { width: 48px; height: 48px; }
+  }
 `;
 
 export default function CocinaPedidoDetail() {
