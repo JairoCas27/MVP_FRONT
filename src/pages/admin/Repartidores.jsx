@@ -246,13 +246,9 @@ export default function Repartidores() {
           {selected && (
             <Row className="g-3">
               <Col md={4} className="text-center">
-                {selected.photo ? (
-                  <img src={selected.photo.startsWith("http") ? selected.photo : `${API_HOST}${selected.photo}`} alt={selected.name} style={{ width: 120, height: 120, borderRadius: "50%", objectFit: "cover", border: "3px solid #D63447" }} />
-                ) : (
-                  <span style={{ width: 120, height: 120, borderRadius: "50%", background: "linear-gradient(135deg, #D63447, #a82333)", color: "#fff", display: "inline-flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: "2rem", border: "3px solid #D63447" }}>
-                    {selected.name ? selected.name.trim().split(/\s+/).map((p) => p.charAt(0)).slice(0, 2).join("").toUpperCase() : "U"}
-                  </span>
-                )}
+                <span style={{ width: 120, height: 120, borderRadius: "50%", background: "linear-gradient(135deg, #D63447, #a82333)", color: "#fff", display: "inline-flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: "2rem", border: "3px solid #D63447" }}>
+                  {selected.name ? selected.name.trim().split(/\s+/).map((p) => p.charAt(0)).slice(0, 2).join("").toUpperCase() : "U"}
+                </span>
                 <h5 className="fw-bold mt-3 mb-0">{selected.name}</h5>
                 <div className="text-muted small">{selected.username}</div>
                 <div className="mt-2">
