@@ -16,6 +16,12 @@ const styles = `
     border: 1px solid #e5e7eb;
     box-shadow: 0 4px 14px rgba(0,0,0,0.04);
   }
+  @media (max-width: 576px) {
+    .menu-hero { padding: 40px 0 24px; }
+    .menu-hero h1 { font-size: 1.6rem; }
+    .search-box .form-control { padding: 10px 16px; font-size: 0.9rem; }
+    .filter-chip { font-size: 0.8rem; padding: 6px 12px; }
+  }
   .filter-chip {
     border: 1px solid #e5e7eb;
     background: #fff;
@@ -79,7 +85,7 @@ export default function Menu() {
           />
         </div>
 
-        <div className="d-flex flex-wrap gap-2 mb-4">
+        <div className="d-flex gap-2 mb-4" style={{ overflowX: "auto", paddingBottom: 8, flexWrap: "wrap" }}>
           {["Todos", "Pollo", "Papas", "Ensalada", "Gaseosa"].map((f) => (
             <button
               key={f}
