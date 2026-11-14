@@ -94,7 +94,7 @@ export default function RepartidorPedido() {
     { label: "Tipo", value: order.order_type, span: false },
     { label: "Pago", value: order.payment_type, span: false },
     { label: "Creado", value: order.created_at, span: false },
-    { label: "Total", value: `S/ ${order.total_amount.toFixed(2)}`, span: true },
+    { label: "Total", value: `S/ ${order.total_amount.toFixed(2)}`, span: false },
   ];
 
   return (
