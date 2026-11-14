@@ -12,10 +12,11 @@ const homeStyles = `
     min-height: 100vh;
     height: 100vh;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     color: #fff;
     overflow: hidden;
     z-index: 0;
+    padding-top: 14vh;
   }
   .hero-bg-img {
     background-image: url('https://www.radionacional.gob.pe/sites/default/files/pollo_brasa.jpg');
