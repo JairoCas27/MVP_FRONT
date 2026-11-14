@@ -110,7 +110,7 @@ export default function Repartidor() {
 
         <Row className="g-3 mb-4">
           {kpis.map((k, i) => (
-            <Col key={i} xs={6} md={4} lg style={{ flex: "1 1 160px" }}>
+            <Col key={i} xs={6} sm={6} md={4} lg={2} xl={2}>
               <div className="drv-kpi" style={{ "--accent": k.accent }}>
                 <div className="drv-icon mb-2" style={{ background: k.bg, color: k.color }}>
                   <i className={`bi ${k.icon}`}></i>
