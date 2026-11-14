@@ -244,8 +244,18 @@ const homeStyles = `
     to { opacity: 1; transform: translateY(0); }
   }
   @media (max-width: 768px) {
-    .hero-polleria { min-height: 62vh; text-align: center; }
-    .hero-title { font-size: 2.2rem; }
+    .hero-polleria { min-height: 62vh; text-align: center; padding: 40px 0; }
+    .hero-title { font-size: 2rem; }
+    .hero-sub { font-size: 1rem; }
+    .hero-cta, .hero-cta-outline { width: 100%; text-align: center; }
+    .inf-carousel-card { flex: 0 0 140px !important; height: 200px !important; }
+    .classic-card { margin-bottom: 12px; }
+    .section-heading { font-size: 1.4rem; }
+  }
+  @media (max-width: 576px) {
+    .hero-title { font-size: 1.7rem; }
+    .hero-polleria { min-height: 52vh; }
+    .category-chip { font-size: 0.75rem; padding: 6px 12px; }
   }
 `;
 
