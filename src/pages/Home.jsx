@@ -368,7 +368,7 @@ export default function Home() {
                 Jugoso, dorado y con ese sabor inconfundible que te hace volver.
                 Pide en línea, elige tu modalidad y sigue tu pedido en tiempo real.
               </p>
-              <div className="d-flex flex-wrap gap-3">
+              <div className="d-flex gap-3" style={{ flexWrap: "nowrap" }}>
                 <a href="#menu" className="btn hero-cta text-white text-decoration-none">
                   <i className="bi bi-fire me-2"></i>Ver menú
                 </a>
