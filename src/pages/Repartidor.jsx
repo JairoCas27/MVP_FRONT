@@ -109,8 +109,8 @@ export default function Repartidor() {
         </div>
 
         <Row className="g-3 mb-4">
-          {kpis.map((k, i) => (
-            <Col key={i} xs={6} sm={6} md={4} lg={2} xl={2}>
+          {kpis.filter((k) => k.label !== "Ingresos totales").map((k, i) => (
+            <Col key={i} xs={6} sm={6} md={4} lg={3}>
               <div className="drv-kpi" style={{ "--accent": k.accent }}>
                 <div className="drv-icon mb-2" style={{ background: k.bg, color: k.color }}>
                   <i className={`bi ${k.icon}`}></i>
@@ -120,6 +120,17 @@ export default function Repartidor() {
               </div>
             </Col>
           ))}
+        </Row>
+        <Row className="g-3 mb-4">
+          <Col xs={12} md={6} className="mx-auto">
+            <div className="drv-kpi" style={{ "--accent": "#7C3AED" }}>
+              <div className="drv-icon mb-2" style={{ background: "#EDE9FE", color: "#7C3AED" }}>
+                <i className="bi bi-wallet2"></i>
+              </div>
+              <div className="text-muted small">Ingresos totales</div>
+              <div className="fw-bold fs-4">S/ {totalIncome.toFixed(2)}</div>
+            </div>
+          </Col>
         </Row>
 
         <Row className="g-3 mb-4">
