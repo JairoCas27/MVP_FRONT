@@ -17,6 +17,14 @@ const homeStyles = `
     overflow: hidden;
     z-index: 0;
   }
+  .hero-bg-img {
+    background-image: url('https://www.radionacional.gob.pe/sites/default/files/pollo_brasa.jpg');
+  }
+  @media (max-width: 768px) {
+    .hero-bg-img {
+      background-image: url('https://www.eatperu.com/wp-content/uploads/2020/06/Pollo-a-la-Brasa-peruvian-roast-chicken-recipe-1.jpeg');
+    }
+  }
   .hero-bg {
     position: absolute;
     inset: 0;
@@ -327,10 +335,10 @@ export default function Home() {
       <section className="hero-polleria" style={{ position: "relative", overflow: "hidden" }}>
         <div
           aria-hidden="true"
+          className="hero-bg-img"
           style={{
             position: "absolute",
             inset: "-10% -5% -10% -5%",
-            backgroundImage: "url('https://www.radionacional.gob.pe/sites/default/files/pollo_brasa.jpg')",
             backgroundSize: "cover",
             backgroundPosition: "center",
             transform: `translateY(${scrollY * 0.3}px) scale(${1 + Math.min(scrollY / (window.innerHeight || 1), 1) * 0.35})`,
