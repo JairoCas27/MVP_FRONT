@@ -2,7 +2,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { FiHome, FiTruck, FiClock, FiUser, FiLogOut, FiChevronLeft, FiChevronRight, FiList } from "react-icons/fi";
 import logo from "../assets/logo.png";
 
-export default function SidebarRepartidor({ isOpen, setIsOpen }) {
+export default function SidebarRepartidor({ isOpen, setIsOpen, isMobile }) {
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -23,7 +23,7 @@ export default function SidebarRepartidor({ isOpen, setIsOpen }) {
   const driverUser = (() => { try { return JSON.parse(localStorage.getItem("driverUser") || "null"); } catch { return null; } })();
 
   return (
-    <div style={{ width: isOpen ? "240px" : "80px", height: "100vh", backgroundColor: "#181515", position: "fixed", left: 0, top: 0, transition: "width 0.3s ease", display: "flex", flexDirection: "column", boxShadow: "2px 0 15px rgba(0,0,0,0.4)", zIndex: 1000, borderRight: "1px solid #333" }}>
+    <div style={{ width: isMobile ? (isOpen ? "240px" : "0px") : (isOpen ? "240px" : "80px"), overflow: isMobile && !isOpen ? "hidden" : "visible", height: "100vh", backgroundColor: "#181515", position: "fixed", left: 0, top: 0, transition: "width 0.3s ease", display: "flex", flexDirection: "column", boxShadow: "2px 0 15px rgba(0,0,0,0.4)", zIndex: 1000, borderRight: "1px solid #333" }}>
       <div style={{ padding: isOpen ? "1.5rem 1rem" : "1.5rem 0.5rem", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", borderBottom: "1px solid #333", minHeight: "100px", backgroundColor: "#121212" }}>
         <img src={logo} alt="Logo" style={{ width: isOpen ? "120px" : "45px", height: "auto", objectFit: "contain", transition: "all 0.3s ease", filter: "drop-shadow(0 2px 10px rgba(255, 77, 77, 0.3))" }} />
         {isOpen && <p style={{ margin: "0.75rem 0 0 0", fontSize: "0.9rem", color: "#FF4D4D", fontWeight: 600, textAlign: "center" }}>Panel Repartidor</p>}

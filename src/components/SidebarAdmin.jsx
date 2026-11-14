@@ -16,7 +16,7 @@ import {
 } from "react-icons/fi";
 import logo from "../assets/logo.png";
 
-export default function SidebarAdmin({ isOpen, setIsOpen }) {
+export default function SidebarAdmin({ isOpen, setIsOpen, isMobile }) {
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -40,7 +40,8 @@ export default function SidebarAdmin({ isOpen, setIsOpen }) {
   return (
     <div
       style={{
-        width: isOpen ? "240px" : "80px",
+        width: isMobile ? (isOpen ? "240px" : "0px") : (isOpen ? "240px" : "80px"),
+        overflow: isMobile && !isOpen ? "hidden" : "visible",
         height: "100vh",
         backgroundColor: "#181515",
         position: "fixed",
