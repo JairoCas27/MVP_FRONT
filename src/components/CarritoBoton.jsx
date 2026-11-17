@@ -48,7 +48,7 @@ function CarritoBoton({ carrito = [], setCarrito = () => {}, showOffcanvas, setS
       {!showOffcanvas && (
         <div
           className="position-fixed"
-          style={{ bottom: "90px", right: "20px", zIndex: 1050 }}
+          style={{ bottom: "180px", right: "20px", zIndex: 1050 }}
         >
           <Button
             onClick={handleShow}

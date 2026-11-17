@@ -9,7 +9,7 @@ const WhatsappBoton = () => {
       rel="noopener noreferrer"
       style={{
         position: "fixed",
-        bottom: "20px",
+        bottom: "100px",
         right: "20px",
         backgroundColor: "#25D366",
         color: "white",
