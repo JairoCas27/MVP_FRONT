@@ -64,6 +64,155 @@ const styles = `
   @media (max-width: 768px) {
     .dash-header { padding: 20px; }
   }
+  .ai-insights-wrap { position: relative; }
+  .ai-insights-card {
+    position: relative;
+    border-radius: 24px;
+    padding: 28px;
+    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #312e81 100%);
+    color: #fff;
+    box-shadow: 0 20px 60px rgba(30, 27, 75, 0.35), 0 0 0 1px rgba(255,255,255,0.06) inset;
+    overflow: hidden;
+    isolation: isolate;
+  }
+  .ai-insights-card::before {
+    content: '';
+    position: absolute;
+    top: -40%; right: -20%;
+    width: 360px; height: 360px;
+    background: radial-gradient(circle, rgba(214,52,71,0.35) 0%, transparent 70%);
+    filter: blur(40px);
+    z-index: 0;
+    animation: aiFloat 8s ease-in-out infinite;
+  }
+  .ai-insights-card::after {
+    content: '';
+    position: absolute;
+    bottom: -50%; left: -10%;
+    width: 320px; height: 320px;
+    background: radial-gradient(circle, rgba(99,102,241,0.3) 0%, transparent 70%);
+    filter: blur(50px);
+    z-index: 0;
+    animation: aiFloat 10s ease-in-out infinite reverse;
+  }
+  @keyframes aiFloat {
+    0%, 100% { transform: translate(0,0); }
+    50% { transform: translate(20px, -20px); }
+  }
+  .ai-insights-header {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 22px;
+  }
+  .ai-insights-icon {
+    width: 52px; height: 52px;
+    border-radius: 16px;
+    display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(135deg, #D63447, #ff7a18);
+    color: #fff;
+    font-size: 1.5rem;
+    box-shadow: 0 8px 24px rgba(214,52,71,0.45);
+    position: relative;
+  }
+  .ai-pulse {
+    position: absolute;
+    inset: -4px;
+    border-radius: 20px;
+    border: 2px solid rgba(255,122,24,0.6);
+    animation: aiPulse 2s ease-out infinite;
+  }
+  @keyframes aiPulse {
+    0% { transform: scale(1); opacity: 0.8; }
+    100% { transform: scale(1.4); opacity: 0; }
+  }
+  .ai-insights-title {
+    font-weight: 800;
+    font-size: 1.35rem;
+    margin: 0;
+    background: linear-gradient(90deg, #fff, #c7d2fe);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .ai-insights-sub {
+    margin: 0;
+    font-size: 0.8rem;
+    opacity: 0.7;
+  }
+  .ai-badge {
+    margin-left: auto;
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 1px;
+    background: linear-gradient(135deg, #D63447, #ff7a18);
+    box-shadow: 0 4px 14px rgba(214,52,71,0.4);
+  }
+  .ai-insights-grid {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+  }
+  @media (max-width: 768px) {
+    .ai-insights-grid { grid-template-columns: 1fr; }
+  }
+  .ai-tile {
+    position: relative;
+    padding: 18px;
+    border-radius: 16px;
+    background: rgba(255,255,255,0.05);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.08);
+    transition: transform 0.25s ease, background 0.25s ease, box-shadow 0.25s ease;
+    overflow: hidden;
+  }
+  .ai-tile:hover {
+    transform: translateY(-4px);
+    background: rgba(255,255,255,0.09);
+    box-shadow: 0 12px 28px rgba(0,0,0,0.25);
+  }
+  .ai-tile::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 4px; height: 100%;
+    border-radius: 4px 0 0 4px;
+  }
+  .ai-tile-sales::before { background: linear-gradient(180deg, #34d399, #10b981); }
+  .ai-tile-model::before { background: linear-gradient(180deg, #818cf8, #6366f1); }
+  .ai-tile-reg::before { background: linear-gradient(180deg, #fbbf24, #f59e0b); }
+  .ai-tile-tip::before { background: linear-gradient(180deg, #fb7185, #D63447); }
+  .ai-tile-icon {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 1.1rem;
+    margin-bottom: 8px;
+    background: rgba(255,255,255,0.1);
+  }
+  .ai-tile-sales .ai-tile-icon { color: #34d399; }
+  .ai-tile-model .ai-tile-icon { color: #818cf8; }
+  .ai-tile-reg .ai-tile-icon { color: #fbbf24; }
+  .ai-tile-tip .ai-tile-icon { color: #fb7185; }
+  .ai-tile-label {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    opacity: 0.7;
+    margin-bottom: 6px;
+    font-weight: 600;
+  }
+  .ai-tile-value {
+    font-size: 0.92rem;
+    line-height: 1.5;
+    font-weight: 500;
+  }
 `;
 
 export default function Dashboard() {
@@ -156,44 +305,43 @@ export default function Dashboard() {
         </Row>
 
         {insights && (
-          <Row className="g-3 mb-4">
-            <Col md={12}>
-              <div className="chart-card" style={{ background: "linear-gradient(135deg, #1e293b 0%, #0f172a 100%)", color: "#fff" }}>
-                <div className="d-flex align-items-center gap-2 mb-3">
-                  <div className="kpi-icon" style={{ background: "rgba(214,52,71,0.2)", color: "#ff7a18" }}>
-                    <i className="bi bi-robot"></i>
-                  </div>
-                  <h5 className="fw-bold mb-0 text-white">Resumen para el dueño (IA)</h5>
+          <div className="ai-insights-wrap mb-4">
+            <div className="ai-insights-card">
+              <div className="ai-insights-header">
+                <div className="ai-insights-icon">
+                  <i className="bi bi-stars"></i>
+                  <span className="ai-pulse"></span>
                 </div>
-                <Row className="g-3">
-                  <Col md={6}>
-                    <div className="p-3 rounded-3" style={{ background: "rgba(255,255,255,0.06)" }}>
-                      <div className="small text-uppercase opacity-75 mb-1"><i className="bi bi-graph-up-arrow me-1"></i>Proyección de ventas</div>
-                      <div className="fw-semibold">{insights.proyeccion_ventas}</div>
-                    </div>
-                  </Col>
-                  <Col md={6}>
-                    <div className="p-3 rounded-3" style={{ background: "rgba(255,255,255,0.06)" }}>
-                      <div className="small text-uppercase opacity-75 mb-1"><i className="bi bi-cpu me-1"></i>Modelo IA recomendado</div>
-                      <div className="fw-semibold">{insights.modelo_ia_recomendado}</div>
-                    </div>
-                  </Col>
-                  <Col md={6}>
-                    <div className="p-3 rounded-3" style={{ background: "rgba(255,255,255,0.06)" }}>
-                      <div className="small text-uppercase opacity-75 mb-1"><i className="bi bi-bar-chart-line me-1"></i>Análisis de regresión</div>
-                      <div className="fw-semibold">{insights.analisis_regresion_explicado}</div>
-                    </div>
-                  </Col>
-                  <Col md={6}>
-                    <div className="p-3 rounded-3" style={{ background: "rgba(255,255,255,0.06)" }}>
-                      <div className="small text-uppercase opacity-75 mb-1"><i className="bi bi-lightbulb me-1"></i>Consejo operativo</div>
-                      <div className="fw-semibold">{insights.consejo_operativo}</div>
-                    </div>
-                  </Col>
-                </Row>
+                <div>
+                  <h5 className="ai-insights-title">Resumen para el dueño</h5>
+                  <p className="ai-insights-sub">Generado por inteligencia artificial · La Fogata</p>
+                </div>
+                <div className="ai-badge">IA</div>
               </div>
-            </Col>
-          </Row>
+              <div className="ai-insights-grid">
+                <div className="ai-tile ai-tile-sales">
+                  <div className="ai-tile-icon"><i className="bi bi-graph-up-arrow"></i></div>
+                  <div className="ai-tile-label">Proyección de ventas</div>
+                  <div className="ai-tile-value">{insights.proyeccion_ventas}</div>
+                </div>
+                <div className="ai-tile ai-tile-model">
+                  <div className="ai-tile-icon"><i className="bi bi-cpu"></i></div>
+                  <div className="ai-tile-label">Modelo IA recomendado</div>
+                  <div className="ai-tile-value">{insights.modelo_ia_recomendado}</div>
+                </div>
+                <div className="ai-tile ai-tile-reg">
+                  <div className="ai-tile-icon"><i className="bi bi-bar-chart-line"></i></div>
+                  <div className="ai-tile-label">Análisis de regresión</div>
+                  <div className="ai-tile-value">{insights.analisis_regresion_explicado}</div>
+                </div>
+                <div className="ai-tile ai-tile-tip">
+                  <div className="ai-tile-icon"><i className="bi bi-lightbulb"></i></div>
+                  <div className="ai-tile-label">Consejo operativo</div>
+                  <div className="ai-tile-value">{insights.consejo_operativo}</div>
+                </div>
+              </div>
+            </div>
+          </div>
         )}
 
         <Row className="g-3 mb-4">
