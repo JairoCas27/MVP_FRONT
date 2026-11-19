@@ -69,6 +69,7 @@ const styles = `
 export default function Dashboard() {
   const [metrics, setMetrics] = useState(null);
   const [counts, setCounts] = useState({ products: 0, clients: 0, feedbacks: 0, deliveries: 0, activeOrders: [] });
+  const [insights, setInsights] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const token = localStorage.getItem("token");
@@ -77,13 +78,14 @@ export default function Dashboard() {
     const headers = { Authorization: `Bearer ${token}` };
     const load = async () => {
       try {
-        const [m, p, c, f, d, a] = await Promise.all([
+        const [m, p, c, f, d, a, ins] = await Promise.all([
           fetch(`${API_HOST}/api/admin/metrics`, { headers }).then((r) => r.json()),
           fetch(`${API_HOST}/api/admin/products`, { headers }).then((r) => r.json()),
           fetch(`${API_HOST}/api/admin/clients`, { headers }).then((r) => r.json()),
           fetch(`${API_HOST}/api/admin/feedbacks`, { headers }).then((r) => r.json()),
           fetch(`${API_HOST}/api/admin/deliveries`, { headers }).then((r) => r.json()),
           fetch(`${API_HOST}/api/admin/orders/active`, { headers }).then((r) => r.json()),
+          fetch(`${API_HOST}/api/ai/business-human-insights`).then((r) => r.json()).catch(() => null),
         ]);
         if (m.status === "success") setMetrics(m.data);
         setCounts({
@@ -93,6 +95,7 @@ export default function Dashboard() {
           deliveries: d.data?.length || 0,
           activeOrders: a.data || [],
         });
+        if (ins && ins.status === "success" && ins.resumen_para_el_dueno) setInsights(ins.resumen_para_el_dueno);
         setError(null);
       } catch (err) {
         setError(err.message);
@@ -151,6 +154,47 @@ export default function Dashboard() {
             </Col>
           ))}
         </Row>
+
+        {insights && (
+          <Row className="g-3 mb-4">
+            <Col md={12}>
+              <div className="chart-card" style={{ background: "linear-gradient(135deg, #1e293b 0%, #0f172a 100%)", color: "#fff" }}>
+                <div className="d-flex align-items-center gap-2 mb-3">
+                  <div className="kpi-icon" style={{ background: "rgba(214,52,71,0.2)", color: "#ff7a18" }}>
+                    <i className="bi bi-robot"></i>
+                  </div>
+                  <h5 className="fw-bold mb-0 text-white">Resumen para el dueño (IA)</h5>
+                </div>
+                <Row className="g-3">
+                  <Col md={6}>
+                    <div className="p-3 rounded-3" style={{ background: "rgba(255,255,255,0.06)" }}>
+                      <div className="small text-uppercase opacity-75 mb-1"><i className="bi bi-graph-up-arrow me-1"></i>Proyección de ventas</div>
+                      <div className="fw-semibold">{insights.proyeccion_ventas}</div>
+                    </div>
+                  </Col>
+                  <Col md={6}>
+                    <div className="p-3 rounded-3" style={{ background: "rgba(255,255,255,0.06)" }}>
+                      <div className="small text-uppercase opacity-75 mb-1"><i className="bi bi-cpu me-1"></i>Modelo IA recomendado</div>
+                      <div className="fw-semibold">{insights.modelo_ia_recomendado}</div>
+                    </div>
+                  </Col>
+                  <Col md={6}>
+                    <div className="p-3 rounded-3" style={{ background: "rgba(255,255,255,0.06)" }}>
+                      <div className="small text-uppercase opacity-75 mb-1"><i className="bi bi-bar-chart-line me-1"></i>Análisis de regresión</div>
+                      <div className="fw-semibold">{insights.analisis_regresion_explicado}</div>
+                    </div>
+                  </Col>
+                  <Col md={6}>
+                    <div className="p-3 rounded-3" style={{ background: "rgba(255,255,255,0.06)" }}>
+                      <div className="small text-uppercase opacity-75 mb-1"><i className="bi bi-lightbulb me-1"></i>Consejo operativo</div>
+                      <div className="fw-semibold">{insights.consejo_operativo}</div>
+                    </div>
+                  </Col>
+                </Row>
+              </div>
+            </Col>
+          </Row>
+        )}
 
         <Row className="g-3 mb-4">
           <Col md={8}>
