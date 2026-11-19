@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Container, Card, Button, Spinner, Alert, Badge, Row, Col } from "react-bootstrap";
 import { API_HOST } from "../services/api";
@@ -13,18 +13,14 @@ const styles = `
   .det-card {
     background: #fff; border-radius: 20px; padding: 20px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.07); border: 1px solid rgba(0,0,0,0.05);
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+    height: 100%; display: flex; flex-direction: column; justify-content: center;
   }
   .prod-row {
     display: flex; align-items: center; gap: 14px; padding: 12px;
     border-radius: 14px; background: #f8fafc; margin-bottom: 10px;
-    transition: transform 0.2s ease;
   }
-  .prod-row:hover { transform: translateX(4px); }
   .prod-img { width: 64px; height: 64px; border-radius: 12px; object-fit: cover; }
+  .address-badge { background: #fef2f2; border: 1px solid #fecaca; border-radius: 12px; padding: 12px 16px; margin-bottom: 14px; color: #991b1b; font-weight: 700; font-size: 0.95rem; display: flex; align-items: center; gap: 10px; }
 `;
 
 export default function RepartidorPedido() {
@@ -36,6 +32,9 @@ export default function RepartidorPedido() {
   const [error, setError] = useState(null);
   const [coords, setCoords] = useState(null);
   const [dest, setDest] = useState(null);
+  const [routeCoords, setRouteCoords] = useState([]);
+  const mapRef = useRef(null);
+  const mapInstanceRef = useRef(null);
 
   useEffect(() => {
     if (!token) { navigate("/cuenta"); return; }
@@ -59,7 +58,7 @@ export default function RepartidorPedido() {
       }
     };
     load();
-  }, [id]);
+  }, [id, token, navigate]);
 
   useEffect(() => {
     if (!navigator.geolocation) return;
@@ -70,6 +69,81 @@ export default function RepartidorPedido() {
     );
     return () => navigator.geolocation.clearWatch(watchId);
   }, []);
+
+  useEffect(() => {
+    const fetchRoute = async () => {
+      const startLat = coords ? coords.lat : (dest ? dest.lat - 0.01 : -12.0464);
+      const startLon = coords ? coords.lon : (dest ? dest.lon - 0.01 : -77.0428);
+      const targetDest = dest ? dest : { lat: startLat + 0.01, lon: startLon + 0.01 };
+
+      try {
+        const res = await fetch(`https://router.project-osrm.org/route/v1/driving/${startLon},${startLat};${targetDest.lon},${targetDest.lat}?overview=full&geometries=geojson`);
+        const data = await res.json();
+        if (data.routes && data.routes.length > 0) {
+          const latLngs = data.routes[0].geometry.coordinates.map(coord => [coord[1], coord[0]]);
+          setRouteCoords(latLngs);
+        }
+      } catch {
+        setRouteCoords([
+          [startLat, startLon],
+          [targetDest.lat, targetDest.lon]
+        ]);
+      }
+    };
+
+    fetchRoute();
+  }, [coords, dest]);
+
+  useEffect(() => {
+    if (!document.getElementById("leaflet-css")) {
+      const link = document.createElement("link");
+      link.id = "leaflet-css";
+      link.rel = "stylesheet";
+      link.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
+      document.head.appendChild(link);
+    }
+    if (!window.L && !document.getElementById("leaflet-js")) {
+      const script = document.createElement("script");
+      script.id = "leaflet-js";
+      script.src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
+      script.async = true;
+      script.onload = initMap;
+      document.body.appendChild(script);
+    } else if (window.L) {
+      initMap();
+    }
+  }, [coords, dest, routeCoords]);
+
+  const initMap = () => {
+    if (!mapRef.current || !window.L) return;
+    const defaultLat = coords ? coords.lat : (dest ? dest.lat : -12.0464);
+    const defaultLon = coords ? coords.lon : (dest ? dest.lon : -77.0428);
+
+    if (mapInstanceRef.current) {
+      mapInstanceRef.current.remove();
+      mapInstanceRef.current = null;
+    }
+
+    const map = window.L.map(mapRef.current).setView([defaultLat, defaultLon], 14);
+    mapInstanceRef.current = map;
+
+    window.L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+      attribution: '© OpenStreetMap'
+    }).addTo(map);
+
+    const driverPos = coords ? [coords.lat, coords.lon] : [defaultLat - 0.01, defaultLon - 0.01];
+    window.L.marker(driverPos).addTo(map).bindPopup("Mi Ubicación (Repartidor)").openPopup();
+
+    if (dest) {
+      window.L.marker([dest.lat, dest.lon]).addTo(map).bindPopup(`Destino: ${order?.delivery_address || ""}`);
+    }
+
+    if (routeCoords && routeCoords.length > 0) {
+      window.L.polyline(routeCoords, { color: "#D63447", weight: 6, opacity: 0.85 }).addTo(map);
+      map.fitBounds(routeCoords);
+    }
+  };
 
   const accept = async () => {
     await fetch(`${API_HOST}/api/driver/deliveries/${id}/accept`, { method: "POST", headers: { Authorization: `Bearer ${token}` } });
@@ -83,10 +157,6 @@ export default function RepartidorPedido() {
 
   if (loading) return <div className="text-center py-5"><Spinner animation="border" variant="danger" /></div>;
   if (error || !order) return <Container className="py-5"><Alert variant="danger">{error || "Pedido no encontrado"}</Alert></Container>;
-
-  const osmSrc = dest
-    ? `https://www.openstreetmap.org/export/embed.html?bbox=${dest.lon - 0.01},${dest.lat - 0.01},${dest.lon + 0.01},${dest.lat + 0.01}&layer=mapnik&marker=${dest.lat},${dest.lon}`
-    : null;
 
   const infoItems = [
     { label: "Cliente", value: order.customer_name, span: false },
@@ -109,7 +179,7 @@ export default function RepartidorPedido() {
           <div className="d-flex justify-content-between align-items-center flex-wrap gap-2">
             <div>
               <h2 className="fw-bold mb-1">Pedido #{order.id}</h2>
-              <p className="mb-0 opacity-75">Detalle completo de la entrega</p>
+              <p className="mb-0 opacity-75">Navegación y ruta real por calles en tiempo real</p>
             </div>
             <Badge bg={order.status === "EN_CAMINO" ? "success" : "warning"} text={order.status === "EN_CAMINO" ? "light" : "dark"} className="fs-6 px-3 py-2">
               {order.status === "EN_CAMINO" ? "En camino" : order.status}
@@ -120,7 +190,7 @@ export default function RepartidorPedido() {
         <Row className="g-3 mb-4">
           {infoItems.map((info, idx) => (
             <Col key={idx} xs={info.span ? 12 : 6} md={info.span ? 12 : 3}>
-              <div className="det-card text-center" style={{ height: "100%", display: "flex", flexDirection: "column", justifyContent: "center", minHeight: 70 }}>
+              <div className="det-card text-center" style={{ minHeight: 70 }}>
                 <div className="text-muted small mb-1">{info.label}</div>
                 <div className="fw-bold" style={{ fontSize: "0.95rem", wordBreak: "break-word" }}>{info.value}</div>
               </div>
@@ -145,18 +215,6 @@ export default function RepartidorPedido() {
                   </div>
                 </div>
               ))}
-              <div className="mt-3 pt-3 border-top">
-                <div className="text-muted small mb-2">Progreso de entrega</div>
-                <div className="progress" style={{ height: 8, borderRadius: 999 }}>
-                  <div className="progress-bar" role="progressbar" style={{ width: order.status === "PENDIENTE" ? "25%" : order.status === "PREPARANDO" ? "50%" : (order.status === "EN_CAMINO" || order.status === "LISTO_PARA_RECOJO") ? "75%" : "100%", background: "linear-gradient(90deg, #D63447, #ff7a18)" }}></div>
-                </div>
-                <div className="d-flex justify-content-between mt-2" style={{ fontSize: "0.7rem", color: "#9ca3af" }}>
-                  <span>Pendiente</span>
-                  <span>Preparando</span>
-                  <span>En camino</span>
-                  <span>Entregado</span>
-                </div>
-              </div>
             </div>
           </Col>
         </Row>
@@ -164,31 +222,25 @@ export default function RepartidorPedido() {
         <Row className="g-4 mt-1">
           <Col md={12}>
             <div className="det-card">
-              <h5 className="fw-bold mb-3"><i className="bi bi-map me-2 text-danger"></i>Seguimiento en tiempo real</h5>
+              <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                <h5 className="fw-bold mb-0"><i className="bi bi-map me-2 text-danger"></i>Mapa de Navegación y Trazado de Ruta</h5>
+              </div>
+
+              <div className="address-badge">
+                <i className="bi bi-geo-alt-fill fs-5 text-danger"></i>
+                <div>
+                  <div className="small text-uppercase text-muted" style={{ fontSize: "0.7rem" }}>Dirección de Destino:</div>
+                  <div>{order.delivery_address}</div>
+                </div>
+              </div>
+
               {coords && (
                 <div className="text-muted small mb-2">
-                  <i className="bi bi-geo-alt me-1"></i>Tu ubicación: {coords.lat.toFixed(5)}, {coords.lon.toFixed(5)}
+                  <i className="bi bi-crosshair text-success me-1"></i>Tu ubicación GPS actual detectada
                 </div>
               )}
-              {dest && (
-                <div className="text-muted small mb-2">
-                  <i className="bi bi-flag me-1"></i>Destino: {dest.lat.toFixed(5)}, {dest.lon.toFixed(5)}
-                </div>
-              )}
-              {dest ? (
-                <div style={{ borderRadius: 16, overflow: "hidden", border: "1px solid #e5e7eb" }}>
-                  <iframe
-                    title="mapa-seguimiento"
-                    width="100%"
-                    height="320"
-                    style={{ border: 0 }}
-                    loading="lazy"
-                    src={`https://www.openstreetmap.org/export/embed.html?bbox=${dest.lon - 0.01},${dest.lat - 0.01},${dest.lon + 0.01},${dest.lat + 0.01}&layer=mapnik&marker=${dest.lat},${dest.lon}`}
-                  ></iframe>
-                </div>
-              ) : (
-                <div className="text-center py-5 text-muted">Cargando mapa...</div>
-              )}
+
+              <div ref={mapRef} style={{ width: "100%", height: "420px", borderRadius: "16px", border: "1px solid #e5e7eb", zIndex: 1 }}></div>
             </div>
           </Col>
         </Row>

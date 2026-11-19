@@ -124,7 +124,7 @@ function MyFooter() {
 
               <p className="info-text fw-bold text-white mb-0">
                 <i className="bi bi-geo-alt-fill icon-accent"></i>
-                Lima - Perú
+                Ancón - Lima - Perú
               </p>
             </Col>
 

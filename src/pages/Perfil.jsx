@@ -5,65 +5,16 @@ import { useClientAuth } from "../hooks/useClientAuth";
 import { API_HOST } from "../services/api";
 
 const styles = `
-  .login-scene {
-    position: relative;
+  .profile-scene {
     min-height: 100vh;
-    overflow: hidden;
-    background:
-      radial-gradient(1200px 600px at 50% 120%, rgba(214,52,71,0.55) 0%, rgba(214,52,71,0.15) 35%, transparent 60%),
-      radial-gradient(900px 500px at 20% 110%, rgba(255,140,0,0.45) 0%, transparent 55%),
-      radial-gradient(900px 500px at 80% 110%, rgba(255,100,0,0.4) 0%, transparent 55%),
-      linear-gradient(180deg, #0b0b0f 0%, #1a1010 45%, #0b0b0f 100%);
+    background: #f8f9fa;
+    padding: 40px 0 80px;
   }
-  .login-scene::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: repeating-linear-gradient(0deg, rgba(255,255,255,0.02) 0px, rgba(255,255,255,0.02) 1px, transparent 1px, transparent 3px);
-    pointer-events: none;
-    z-index: 1;
-  }
-  .ember {
-    position: absolute;
-    bottom: -10px;
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: radial-gradient(circle, #ffd27d 0%, #ff7a18 40%, transparent 70%);
-    box-shadow: 0 0 12px 2px rgba(255,120,0,0.6);
-    animation: rise 6s linear infinite;
-    opacity: 0;
-    z-index: 2;
-  }
-  @keyframes rise {
-    0% { transform: translateY(0) translateX(0); opacity: 0; }
-    10% { opacity: 1; }
-    80% { opacity: 0.8; }
-    100% { transform: translateY(-110vh) translateX(40px); opacity: 0; }
-  }
-  .fire-glow {
-    position: absolute;
-    bottom: -80px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 600px;
-    height: 400px;
-    background: radial-gradient(ellipse at center, rgba(255,120,0,0.55) 0%, rgba(214,52,71,0.35) 35%, transparent 70%);
-    filter: blur(40px);
-    animation: flicker 2.5s ease-in-out infinite alternate;
-    z-index: 1;
-  }
-  @keyframes flicker {
-    0% { transform: translateX(-50%) scale(1); opacity: 0.85; }
-    100% { transform: translateX(-50%) scale(1.08); opacity: 1; }
-  }
-  .profile-wrap { position: relative; min-height: 100vh; padding: 40px 0 80px; z-index: 3; }
   .profile-card {
-    background: rgba(20, 16, 14, 0.62);
-    border: 1px solid rgba(255,255,255,0.12);
-    border-radius: 24px;
-    backdrop-filter: blur(18px);
-    box-shadow: 0 30px 80px rgba(0,0,0,0.55);
+    background: #ffffff;
+    border: 1px solid rgba(0,0,0,0.08);
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
     overflow: hidden;
   }
   .profile-header {
@@ -78,20 +29,23 @@ const styles = `
     border-radius: 50%;
     object-fit: cover;
     border: 4px solid #fff;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
   }
-  .profile-label { color: rgba(255,255,255,0.7); }
+  .profile-label {
+    color: #374151;
+  }
   .profile-input {
-    background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(255,255,255,0.15);
-    color: #fff;
+    background: #fff;
+    border: 1px solid #d1d5db;
+    color: #111827;
     border-radius: 12px;
+    padding: 12px 14px;
   }
   .profile-input:focus {
-    background: rgba(255,255,255,0.1);
+    background: #fff;
     border-color: #D63447;
-    box-shadow: 0 0 0 4px rgba(214,52,71,0.25);
-    color: #fff;
+    box-shadow: 0 0 0 4px rgba(214,52,71,0.15);
+    color: #111827;
   }
 `;
 
@@ -216,27 +170,10 @@ export default function Perfil() {
     );
   }
 
-  const embers = Array.from({ length: 24 });
-
   return (
-    <div className="login-scene">
+    <div className="profile-scene">
       <style>{styles}</style>
-      <div className="fire-glow"></div>
-      {embers.map((_, i) => (
-        <span
-          key={i}
-          className="ember"
-          style={{
-            left: `${5 + (i * 5.3) % 90}%`,
-            animationDelay: `${(i * 0.7) % 6}s`,
-            animationDuration: `${5 + (i % 4)}s`,
-            width: `${4 + (i % 4)}px`,
-            height: `${4 + (i % 4)}px`,
-          }}
-        ></span>
-      ))}
-      <div className="profile-wrap">
-        <Container style={{ maxWidth: "720px", position: "relative", zIndex: 3 }}>
+      <Container style={{ maxWidth: "720px" }}>
         <div className="profile-card">
           <div className="profile-header">
             {form.photo || profile.photo ? (
@@ -287,7 +224,7 @@ export default function Perfil() {
                 <Col md={6}>
                   <Form.Group>
                     <Form.Label className="profile-label fw-semibold">Foto de perfil</Form.Label>
-                    <div className="d-flex align-items-center gap-3 mb-2">
+                    <div className="d-flex align-items-center gap-3 mb-2 flex-wrap">
                       <div
                         style={{
                           width: 80,
@@ -316,10 +253,10 @@ export default function Perfil() {
                           getInitials(profile.name)
                         )}
                       </div>
-                      <div className="d-flex flex-column gap-2">
+                      <div className="d-flex align-items-center gap-2 flex-wrap">
                         {form.photo || profile.photo ? (
                           <>
-                            <Button size="sm" variant="outline-light" onClick={() => fileInputRef.current?.click()}>
+                            <Button size="sm" variant="outline-dark" onClick={() => fileInputRef.current?.click()}>
                               <i className="bi bi-pencil me-1"></i>Editar
                             </Button>
                             <Button size="sm" variant="outline-danger" onClick={async () => {
@@ -388,16 +325,16 @@ export default function Perfil() {
                           style={{
                             borderRadius: 20,
                             overflow: "hidden",
-                            border: "1px solid rgba(255,255,255,0.18)",
-                            boxShadow: "0 12px 32px rgba(0,0,0,0.35)",
-                            background: "#0b0b0f",
+                            border: "1px solid rgba(0,0,0,0.12)",
+                            boxShadow: "0 8px 24px rgba(0,0,0,0.06)",
+                            background: "#fff",
                           }}
                         >
                           <iframe
                             title="mapa"
                             width="100%"
                             height="280"
-                            style={{ border: 0, filter: "contrast(1.05) saturate(1.1)" }}
+                            style={{ border: 0 }}
                             loading="lazy"
                             src={`https://www.openstreetmap.org/export/embed.html?bbox=${coords.lon - 0.008},${coords.lat - 0.008},${coords.lon + 0.008},${coords.lat + 0.008}&layer=mapnik&marker=${coords.lat},${coords.lon}`}
                           ></iframe>
@@ -409,7 +346,7 @@ export default function Perfil() {
                   </div>
                 </Col>
               </Row>
-              <div className="d-flex gap-2 mt-4">
+              <div className="d-flex justify-content-center gap-3 mt-4">
                 <Button type="submit" variant="danger" className="rounded-pill px-4 fw-bold" disabled={saving}>
                   {saving ? "Guardando..." : "Guardar cambios"}
                 </Button>
@@ -438,7 +375,6 @@ export default function Perfil() {
           </Modal.Body>
         </Modal>
       </Container>
-    </div>
     </div>
   );
 }

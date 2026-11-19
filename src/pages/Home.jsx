@@ -331,7 +331,6 @@ export default function Home() {
     <div className="menu-section" style={{ minHeight: "100vh" }}>
       <style>{homeStyles}</style>
 
-      {/* HERO */}
       <section className="hero-polleria" style={{ position: "relative", overflow: "hidden" }}>
         <div
           aria-hidden="true"
@@ -359,7 +358,7 @@ export default function Home() {
           <Row className="align-items-center">
             <Col lg={7}>
               <span className="badge bg-light text-danger fw-bold px-3 py-2 mb-3" style={{ borderRadius: 999 }}>
-                🔥 Sabor que enciende tu día
+                 Sabor que enciende tu día
               </span>
               <h1 className="hero-title display-3 mb-3">
                 El mejor pollo a la brasa de la ciudad
@@ -392,7 +391,6 @@ export default function Home() {
         </Container>
       </section>
 
-      {/* CARRUSEL INFINITO - pollo a la brasa y mucho mas */}
       <section style={{ width: "100%", background: "#fff", padding: "48px 0", overflow: "hidden" }}>
         <Container>
           <div className="text-center mb-4">
@@ -457,10 +455,6 @@ export default function Home() {
         `}</style>
       </section>
 
-      {/* CATEGORIES */}
-
-
-      {/* CLASICOS */}
       {clasicos.length > 0 && (
         <Container className="py-5 reveal">
           <div className="text-center mb-4">
@@ -497,7 +491,6 @@ export default function Home() {
         </Container>
       )}
 
-      {/* MENU */}
       <Container id="menu" className="py-4 pb-5 reveal" style={{ maxWidth: "1280px" }}>
         {loading && (
           <div className="text-center py-5">
@@ -519,19 +512,17 @@ export default function Home() {
         </div>
       </Container>
 
-      {/* LOCALES / CONTACTO */}
       <section style={{ background: "#fff", padding: "60px 0" }}>
         <Container>
           <Row className="g-4 align-items-center">
             <Col md={6}>
               <h2 className="section-heading mb-3">Visítanos</h2>
               <p className="text-muted mb-4" style={{ fontSize: "1.05rem" }}>
-                Av. Principal 123, Lima. Atención de lunes a domingo de 11:00 am a 11:00 pm.
+                Mz D Lt 8 Las Esteras II, Ancón.<br />
+                Atención de lunes a domingo de 11:00 am a 11:00 pm.<br />
+                Los feriados se atienden a partir de las 12:00 PM.
               </p>
-              <div className="d-flex flex-wrap gap-3">
-                <a href="#" className="btn btn-outline-danger rounded-pill px-4 fw-semibold">
-                  <i className="bi bi-geo-alt me-2"></i>Ver locales
-                </a>
+              <div className="text-center">
                 <a href="/feedback" className="btn btn-dark rounded-pill px-4 fw-semibold">
                   <i className="bi bi-chat-dots me-2"></i>Contáctanos
                 </a>

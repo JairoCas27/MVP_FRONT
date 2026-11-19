@@ -69,6 +69,16 @@ const styles = `
     font-weight: 700; font-size: 0.9rem;
     box-shadow: 0 4px 12px rgba(214,52,71,0.3);
   }
+  .sb-nav {
+    flex: 1;
+    padding: 0.5rem 0;
+    overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .sb-nav::-webkit-scrollbar {
+    display: none;
+  }
 `;
 
 export default function SidebarCocina({ isOpen, setIsOpen, isMobile }) {
@@ -114,7 +124,7 @@ export default function SidebarCocina({ isOpen, setIsOpen, isMobile }) {
         {isOpen && <p style={{ margin: "0.75rem 0 0 0", fontSize: "0.85rem", color: "#FF6B6B", fontWeight: 700, textAlign: "center", letterSpacing: "0.5px" }}>Panel Cocina</p>}
       </div>
 
-      <nav style={{ flex: 1, padding: "0.5rem 0", overflowY: "auto" }}>
+      <nav className="sb-nav">
         {menuGroups.map((group, gi) => (
           <div key={gi}>
             {isOpen && <div className="sb-section">{group.label}</div>}

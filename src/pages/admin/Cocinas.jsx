@@ -117,7 +117,7 @@ export default function Cocinas() {
             style={{ maxWidth: 260, borderRadius: 999 }}
           />
           <Button style={{ background: "linear-gradient(135deg, #D63447, #a82333)", border: "none" }} className="rounded-pill px-4" onClick={() => setShowModal(true)}>
-            <i className="bi bi-plus-lg me-2"></i>Nueva cocina
+            <i className="bi bi-plus-lg me-2"></i>Nuevo cocinero
           </Button>
         </div>
       </div>
@@ -174,7 +174,7 @@ export default function Cocinas() {
 
       <Modal show={showModal} onHide={() => setShowModal(false)} centered>
         <Modal.Header closeButton>
-          <Modal.Title>Nueva cocina</Modal.Title>
+          <Modal.Title>Nuevo cocinero</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Form.Group className="mb-3">

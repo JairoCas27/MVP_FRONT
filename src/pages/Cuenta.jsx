@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Container, Card, Form, Button, Alert, Tabs, Tab } from "react-bootstrap";
+import { Container, Card, Form, Button, Alert, Tabs, Tab, Row, Col } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { useClientAuth } from "../hooks/useClientAuth";
 import { useAuth } from "../hooks/useAuth";
@@ -86,7 +86,7 @@ const styles = `
     background: linear-gradient(135deg, #D63447 0%, #ff7a18 100%);
     border: none;
     border-radius: 14px;
-    padding: 12px 0;
+    padding: 12px 32px;
     font-weight: 700;
     letter-spacing: 0.5px;
     box-shadow: 0 8px 24px rgba(214,52,71,0.45);
@@ -96,17 +96,21 @@ const styles = `
     transform: translateY(-2px);
     box-shadow: 0 12px 30px rgba(214,52,71,0.55);
   }
-  .login-tabs .nav {
-    justify-content: center;
-    gap: 8px;
+  .login-tabs {
+    display: flex !important;
+    justify-content: center !important;
+    gap: 24px !important;
+    width: 100% !important;
+    margin-bottom: 1.5rem !important;
   }
   .login-tabs .nav-link {
     color: rgba(255,255,255,0.6);
     border-radius: 999px;
     font-weight: 600;
-    padding: 8px 20px;
+    padding: 10px 28px;
     transition: all 0.2s ease;
     border: 1px solid rgba(255,255,255,0.12);
+    text-align: center;
   }
   .login-tabs .nav-link:hover {
     color: #fff;
@@ -133,14 +137,12 @@ function Cuenta() {
 
   const [loginData, setLoginData] = useState({ email: "", password: "" });
   const [regData, setRegData] = useState({ name: "", email: "", dni: "", phone: "", address: "", password: "" });
-  const [driverData, setDriverData] = useState({ username: "repartidor@demo.com", password: "repartidor123" });
   const [coords, setCoords] = useState(null);
   const [addressTouched, setAddressTouched] = useState(false);
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setFormError("");
-    // Try admin first
     try {
       const response = await loginAdmin({ username: loginData.email, password: loginData.password });
       localStorage.setItem("token", response.data.access_token);
@@ -151,9 +153,7 @@ function Cuenta() {
       navigate("/admin/dashboard");
       return;
     } catch (adminErr) {
-      // Not admin; try driver
     }
-    // Try driver
     try {
       const res = await fetch(`${API_HOST}/api/auth/driver/login`, {
         method: "POST",
@@ -170,9 +170,7 @@ function Cuenta() {
       navigate("/repartidor");
       return;
     } catch (driverErr) {
-      // Not driver; try kitchen
     }
-    // Try kitchen
     try {
       const res = await fetch(`${API_HOST}/api/auth/kitchen/login`, {
         method: "POST",
@@ -189,7 +187,6 @@ function Cuenta() {
       navigate("/cocina");
       return;
     } catch (kitchenErr) {
-      // Not kitchen; try client
     }
     try {
       await login(loginData);
@@ -199,26 +196,6 @@ function Cuenta() {
       navigate("/");
     } catch (err) {
       setFormError("Credenciales incorrectas");
-    }
-  };
-
-  const handleDriverLogin = async (e) => {
-    e.preventDefault();
-    setFormError("");
-    try {
-      const res = await fetch(`${API_HOST}/api/auth/driver/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(driverData),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Error al iniciar sesión");
-      localStorage.setItem("driverToken", data.data.access_token);
-      localStorage.setItem("driverUser", JSON.stringify(data.data.driver));
-      window.dispatchEvent(new Event("authChange"));
-      navigate("/repartidor");
-    } catch (err) {
-      setFormError(err.message);
     }
   };
 
@@ -240,6 +217,7 @@ function Cuenta() {
   const error = clientError;
 
   useEffect(() => {
+    if (tab !== "register") return;
     if (!navigator.geolocation) return;
     const watchId = navigator.geolocation.watchPosition(
       (pos) => {
@@ -260,7 +238,7 @@ function Cuenta() {
       { enableHighAccuracy: true, maximumAge: 10000, timeout: 10000 }
     );
     return () => navigator.geolocation.clearWatch(watchId);
-  }, [addressTouched]);
+  }, [tab, addressTouched]);
 
   useEffect(() => {
     if (!addressTouched || !regData.address) return;
@@ -279,10 +257,8 @@ function Cuenta() {
 
   const embers = Array.from({ length: 32 });
 
-  // tab styles injected via styles string below
-
   return (
-    <div className="login-scene d-flex align-items-center justify-content-center">
+    <div className="login-scene d-flex align-items-center justify-content-center py-5">
       <style>{styles}</style>
       <div className="fire-glow"></div>
       {embers.map((_, i) => (
@@ -298,14 +274,13 @@ function Cuenta() {
           }}
         ></span>
       ))}
-      <Container style={{ maxWidth: "520px", position: "relative", zIndex: 3 }}>
+      <Container style={{ maxWidth: tab === "register" ? "860px" : "520px", position: "relative", zIndex: 3, transition: "max-width 0.3s ease" }}>
         <Card className="login-card p-4 p-md-5 border-0">
-        <h2 className="mb-3 text-center" style={{ background: "linear-gradient(135deg, #fff 0%, #ffd27d 60%, #ff7a18 100%)", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent", fontWeight: 800 }}>Mi Cuenta</h2>
+          <h2 className="mb-3 text-center" style={{ background: "linear-gradient(135deg, #fff 0%, #ffd27d 60%, #ff7a18 100%)", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent", fontWeight: 800 }}>Mi Cuenta</h2>
 
+          {(error || formError) && <Alert variant="danger">{error || formError}</Alert>}
 
-        {(error || formError) && <Alert variant="danger">{error || formError}</Alert>}
-
-        <Tabs activeKey={tab} onSelect={(k) => setTab(k)} className="login-tabs mb-3" variant="pills">
+          <Tabs activeKey={tab} onSelect={(k) => setTab(k)} className="login-tabs" variant="pills">
             <Tab eventKey="login" title="Iniciar Sesión">
               <Form onSubmit={handleLogin} className="text-start">
                 <Form.Group className="mb-3">
@@ -354,38 +329,80 @@ function Cuenta() {
                     </button>
                   </div>
                 </Form.Group>
-                <div className="d-flex justify-content-end mb-3">
+                <div className="d-flex justify-content-end mb-4">
                   <a href="/olvide-contrasena" className="text-white-50 small text-decoration-none">¿Olvidaste tu contraseña?</a>
                 </div>
-                <Button type="submit" className="w-100 login-btn" disabled={loading}>
-                  {loading ? "Ingresando..." : "Ingresar"}
-                </Button>
-
+                <div className="text-center">
+                  <Button type="submit" className="login-btn" disabled={loading} style={{ minWidth: "220px" }}>
+                    {loading ? "Ingresando..." : "Ingresar"}
+                  </Button>
+                </div>
               </Form>
             </Tab>
+
             <Tab eventKey="register" title="Registrarse">
               <Form onSubmit={handleRegister} className="text-start">
-                <Form.Group className="mb-3">
-                  <Form.Label className="text-white-50 small">Nombre</Form.Label>
-                  <Form.Control required value={regData.name} onChange={(e) => setRegData({ ...regData, name: e.target.value })} />
-                </Form.Group>
-                <Form.Group className="mb-3">
-                  <Form.Label className="text-white-50 small">DNI</Form.Label>
-                  <Form.Control value={regData.dni} onChange={(e) => setRegData({ ...regData, dni: e.target.value })} />
-                </Form.Group>
-                <Form.Group className="mb-3">
-                  <Form.Label className="text-white-50 small">Email</Form.Label>
-                  <Form.Control type="email" required value={regData.email} onChange={(e) => setRegData({ ...regData, email: e.target.value })} />
-                </Form.Group>
-                <Form.Group className="mb-3">
-                  <Form.Label className="text-white-50 small">Teléfono</Form.Label>
-                  <Form.Control value={regData.phone} onChange={(e) => setRegData({ ...regData, phone: e.target.value })} />
-                </Form.Group>
-                <Form.Group className="mb-3">
-                  <Form.Label className="text-white-50 small">Dirección</Form.Label>
-                  <Form.Control value={regData.address} onChange={(e) => { setRegData({ ...regData, address: e.target.value }); setAddressTouched(true); }} />
-                </Form.Group>
-                <div className="mb-3">
+                <Row>
+                  <Col md={6}>
+                    <Form.Group className="mb-3">
+                      <Form.Label className="text-white-50 small">Nombre</Form.Label>
+                      <Form.Control required value={regData.name} onChange={(e) => setRegData({ ...regData, name: e.target.value })} placeholder="Tu nombre completo" />
+                    </Form.Group>
+                    <Form.Group className="mb-3">
+                      <Form.Label className="text-white-50 small">DNI</Form.Label>
+                      <Form.Control value={regData.dni} onChange={(e) => setRegData({ ...regData, dni: e.target.value })} placeholder="Número de DNI" />
+                    </Form.Group>
+                    <Form.Group className="mb-3">
+                      <Form.Label className="text-white-50 small">Teléfono</Form.Label>
+                      <Form.Control value={regData.phone} onChange={(e) => setRegData({ ...regData, phone: e.target.value })} placeholder="Número de teléfono" />
+                    </Form.Group>
+                  </Col>
+
+                  <Col md={6}>
+                    <Form.Group className="mb-3">
+                      <Form.Label className="text-white-50 small">Email</Form.Label>
+                      <Form.Control type="email" required value={regData.email} onChange={(e) => setRegData({ ...regData, email: e.target.value })} placeholder="tu@email.com" />
+                    </Form.Group>
+                    <Form.Group className="mb-3">
+                      <Form.Label className="text-white-50 small">Dirección</Form.Label>
+                      <Form.Control value={regData.address} onChange={(e) => { setRegData({ ...regData, address: e.target.value }); setAddressTouched(true); }} placeholder="Tu dirección" />
+                    </Form.Group>
+                    <Form.Group className="mb-3">
+                      <Form.Label className="text-white-50 small">Contraseña</Form.Label>
+                      <div className="position-relative">
+                        <i className="bi bi-lock position-absolute" style={{ left: 14, top: "50%", transform: "translateY(-50%)", color: "rgba(255,255,255,0.5)" }}></i>
+                        <Form.Control
+                          type={showPassword ? "text" : "password"}
+                          required
+                          minLength={6}
+                          className="login-input shadow-none"
+                          style={{ paddingLeft: 42, paddingRight: 42 }}
+                          value={regData.password}
+                          onChange={(e) => setRegData({ ...regData, password: e.target.value })}
+                          placeholder="••••••••"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword((v) => !v)}
+                          style={{
+                            position: "absolute",
+                            right: 10,
+                            top: "50%",
+                            transform: "translateY(-50%)",
+                            background: "none",
+                            border: "none",
+                            color: "rgba(255,255,255,0.6)",
+                            cursor: "pointer",
+                          }}
+                        >
+                          <i className={`bi ${showPassword ? "bi-eye-slash" : "bi-eye"}`}></i>
+                        </button>
+                      </div>
+                    </Form.Group>
+                  </Col>
+                </Row>
+
+                <div className="mb-4">
                   <div className="text-white-50 small mb-2">
                     <i className="bi bi-geo-alt me-2"></i>Ubicación en tiempo real
                   </div>
@@ -398,7 +415,7 @@ function Cuenta() {
                         <iframe
                           title="mapa-registro"
                           width="100%"
-                          height="220"
+                          height="200"
                           style={{ border: 0 }}
                           loading="lazy"
                           src={`https://www.openstreetmap.org/export/embed.html?bbox=${coords.lon - 0.01},${coords.lat - 0.01},${coords.lon + 0.01},${coords.lat + 0.01}&layer=mapnik&marker=${coords.lat},${coords.lon}`}
@@ -409,46 +426,17 @@ function Cuenta() {
                     <div className="text-muted small">Obteniendo ubicación...</div>
                   )}
                 </div>
-                <Form.Group className="mb-3">
-                  <Form.Label className="text-white-50 small">Contraseña</Form.Label>
-                  <div className="position-relative">
-                    <i className="bi bi-lock position-absolute" style={{ left: 14, top: "50%", transform: "translateY(-50%)", color: "rgba(255,255,255,0.5)" }}></i>
-                    <Form.Control
-                      type={showPassword ? "text" : "password"}
-                      required
-                      minLength={6}
-                      className="login-input shadow-none"
-                      style={{ paddingLeft: 42, paddingRight: 42 }}
-                      value={regData.password}
-                      onChange={(e) => setRegData({ ...regData, password: e.target.value })}
-                      placeholder="••••••••"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword((v) => !v)}
-                      style={{
-                        position: "absolute",
-                        right: 10,
-                        top: "50%",
-                        transform: "translateY(-50%)",
-                        background: "none",
-                        border: "none",
-                        color: "rgba(255,255,255,0.6)",
-                        cursor: "pointer",
-                      }}
-                    >
-                      <i className={`bi ${showPassword ? "bi-eye-slash" : "bi-eye"}`}></i>
-                    </button>
-                  </div>
-                </Form.Group>
-                <Button type="submit" className="w-100 login-btn" disabled={loading}>
-                  {loading ? "Registrando..." : "Crear cuenta"}
-                </Button>
+
+                <div className="text-center">
+                  <Button type="submit" className="login-btn" disabled={loading} style={{ minWidth: "240px" }}>
+                    {loading ? "Registrando..." : "Crear cuenta"}
+                  </Button>
+                </div>
               </Form>
             </Tab>
           </Tabs>
-      </Card>
-    </Container>
+        </Card>
+      </Container>
     </div>
   );
 }

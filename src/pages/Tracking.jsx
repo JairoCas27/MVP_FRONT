@@ -1,11 +1,16 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { Container, Card, Badge, Spinner, Form, Button } from "react-bootstrap";
+import { useParams, useNavigate, useOutletContext } from "react-router-dom";
+import { Container, Card, Spinner, Button, Row, Col } from "react-bootstrap";
 import { io } from "socket.io-client";
 import { API_HOST } from "../services/api";
 import { useTrackingOrder } from "../hooks/useOrder";
+import { ProductCard } from "../components/ProductCard";
 
 function Tracking() {
+  const outletContext = useOutletContext() || {};
+  const setCarrito = outletContext.setCarrito || (() => {});
+  const carrito = outletContext.carrito || [];
+
   const { orderId: paramOrderId } = useParams();
   const navigate = useNavigate();
 
@@ -13,6 +18,8 @@ function Tracking() {
   const [activeOrderId, setActiveOrderId] = useState(paramOrderId || null);
   const [clientOrders, setClientOrders] = useState([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
+  const [recommendations, setRecommendations] = useState([]);
+  const [loadingAi, setLoadingAi] = useState(false);
 
   const { order, setOrder, loading, error } = useTrackingOrder(activeOrderId);
 
@@ -31,6 +38,29 @@ function Tracking() {
       .then((d) => { if (d.status === "success") setClientOrders(d.data || []); })
       .catch(() => {})
       .finally(() => setLoadingHistory(false));
+
+    setLoadingAi(true);
+    fetch(`${API_HOST}/api/ai/recommendations`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" }
+    })
+      .then((r) => r.json())
+      .then((d) => {
+        console.log("DEBUG AI Response:", d);
+        if (d.status === "success" && d.data && d.data.recommendations) {
+          const formatted = d.data.recommendations.map((p) => ({
+            id: p.id,
+            nombre: p.name,
+            descripcion: p.description,
+            precio: parseFloat(p.price),
+            imagen: p.image
+          }));
+          console.log("DEBUG Formatted Recommendations:", formatted);
+          setRecommendations(formatted);
+        }
+      })
+      .catch((err) => console.error("DEBUG AI Error:", err))
+      .finally(() => setLoadingAi(false));
   }, []);
 
   useEffect(() => {
@@ -53,18 +83,26 @@ function Tracking() {
     };
   }, [activeOrderId, setOrder]);
 
-  const handleSearch = (e) => {
-    e.preventDefault();
-    const trimmedId = inputOrderId.trim();
-    if (trimmedId) {
-      navigate(`/tracking/${trimmedId}`);
-    }
-  };
-
   const handleReset = () => {
     setActiveOrderId(null);
     setInputOrderId("");
     navigate("/tracking");
+  };
+
+  const agregarAlCarrito = (producto) => {
+    console.log("DEBUG: Click en agregar producto desde Tracking:", producto);
+    setCarrito((prev) => {
+      console.log("DEBUG: Carrito anterior:", prev);
+      const ex = prev.find((i) => i.id === producto.id);
+      if (ex) {
+        const updated = prev.map((i) => (i.id === producto.id ? { ...i, cantidad: i.cantidad + 1 } : i));
+        console.log("DEBUG: Carrito actualizado (incrementado):", updated);
+        return updated;
+      }
+      const added = [...prev, { ...producto, cantidad: 1 }];
+      console.log("DEBUG: Carrito actualizado (nuevo item):", added);
+      return added;
+    });
   };
 
   if (!activeOrderId) {
@@ -89,7 +127,7 @@ function Tracking() {
     }
 
     return (
-      <Container className="py-5" style={{ maxWidth: "760px" }}>
+      <Container className="py-5" style={{ maxWidth: "860px" }}>
         <Card className="border-0 shadow-sm p-4 rounded-4 mb-4">
           <h4 className="fw-bold mb-3">Mis Pedidos</h4>
           {loadingHistory && <div className="text-center py-3"><Spinner animation="border" variant="danger" /></div>}
@@ -173,6 +211,38 @@ function Tracking() {
               );
             })}
           </div>
+        </Card>
+
+        <Card className="border-0 shadow-sm p-4 rounded-4 text-center" style={{ background: "linear-gradient(135deg, #1c1917 0%, #292524 100%)", color: "#fff" }}>
+          <div className="d-flex flex-column align-items-center mb-4">
+            <div className="rounded-circle p-3 d-inline-flex justify-content-center align-items-center mb-2" style={{ background: "rgba(214, 52, 71, 0.2)", color: "#D63447", width: 56, height: 56 }}>
+              <i className="bi bi-stars fs-4"></i>
+            </div>
+            <h4 className="fw-bold mb-1">Recomendaciones Inteligentes para Ti</h4>
+            <p className="text-muted small mb-0" style={{ color: "#a8a29e" }}>
+              Generadas mediante algoritmos de búsqueda informada (A*) según tu historial de compras
+            </p>
+          </div>
+
+          {loadingAi && (
+            <div className="text-center py-4">
+              <Spinner animation="border" variant="danger" />
+            </div>
+          )}
+
+          {!loadingAi && recommendations.length === 0 && (
+            <p className="text-muted small mb-0 py-3">Realiza más pedidos para activar tus recomendaciones personalizadas.</p>
+          )}
+
+          {!loadingAi && recommendations.length > 0 && (
+            <Row className="g-3 justify-content-center">
+              {recommendations.map((prod) => (
+                <Col key={prod.id} xs={12} sm={6} md={4}>
+                  <ProductCard producto={prod} onAgregar={agregarAlCarrito} />
+                </Col>
+              ))}
+            </Row>
+          )}
         </Card>
       </Container>
     );

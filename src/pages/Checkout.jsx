@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Container, Row, Col, Form, Button, Card, Alert, Modal } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { useCreateOrder } from "../hooks/useOrder";
@@ -24,8 +24,11 @@ function Checkout({ carrito = [], setCarrito = () => {} }) {
     table_number: "",
     payment_type: "EFECTIVO"
   });
-  const [coords, setCoords] = useState(null);
-  const [addressTouched, setAddressTouched] = useState(false);
+
+  const mapRef = useRef(null);
+  const mapInstanceRef = useRef(null);
+  const markerRef = useRef(null);
+  const isUpdatingFromMap = useRef(false);
 
   useEffect(() => {
     try {
@@ -45,42 +48,123 @@ function Checkout({ carrito = [], setCarrito = () => {} }) {
   useEffect(() => {
     if (formData.order_type !== "DELIVERY") return;
     if (!navigator.geolocation) return;
-    const watchId = navigator.geolocation.watchPosition(
+    navigator.geolocation.getCurrentPosition(
       (pos) => {
-        const c = { lat: pos.coords.latitude, lon: pos.coords.longitude };
-        setCoords(c);
-        if (!addressTouched && !formData.delivery_address) {
-          fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${c.lat}&lon=${c.lon}`)
+        const lat = pos.coords.latitude;
+        const lon = pos.coords.longitude;
+        if (!formData.delivery_address) {
+          fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`)
             .then((r) => r.json())
             .then((d) => {
               if (d && d.display_name) {
                 setFormData((prev) => ({ ...prev, delivery_address: d.display_name }));
+              }
+              if (mapInstanceRef.current && markerRef.current) {
+                mapInstanceRef.current.setView([lat, lon], 15);
+                markerRef.current.setLatLng([lat, lon]);
               }
             })
             .catch(() => {});
         }
       },
       () => {},
-      { enableHighAccuracy: true, maximumAge: 10000, timeout: 10000 }
+      { enableHighAccuracy: true, timeout: 10000 }
     );
-    return () => navigator.geolocation.clearWatch(watchId);
-  }, [formData.order_type, addressTouched, formData.delivery_address]);
+  }, [formData.order_type]);
 
   useEffect(() => {
     if (formData.order_type !== "DELIVERY") return;
-    if (!addressTouched || !formData.delivery_address) return;
+    if (!document.getElementById("leaflet-css")) {
+      const link = document.createElement("link");
+      link.id = "leaflet-css";
+      link.rel = "stylesheet";
+      link.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
+      document.head.appendChild(link);
+    }
+    if (!window.L && !document.getElementById("leaflet-js")) {
+      const script = document.createElement("script");
+      script.id = "leaflet-js";
+      script.src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
+      script.async = true;
+      script.onload = initMap;
+      document.body.appendChild(script);
+    } else if (window.L) {
+      initMap();
+    }
+  }, [formData.order_type]);
+
+  const initMap = () => {
+    if (!mapRef.current || !window.L || mapInstanceRef.current) return;
+    const defaultLat = -12.0464;
+    const defaultLon = -77.0428;
+
+    const map = window.L.map(mapRef.current).setView([defaultLat, defaultLon], 14);
+    mapInstanceRef.current = map;
+
+    window.L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+      attribution: '© OpenStreetMap'
+    }).addTo(map);
+
+    const marker = window.L.marker([defaultLat, defaultLon], { draggable: true }).addTo(map);
+    markerRef.current = marker;
+
+    marker.on("dragend", (e) => {
+      const pos = e.target.getLatLng();
+      isUpdatingFromMap.current = true;
+      fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${pos.lat}&lon=${pos.lng}`)
+        .then((r) => r.json())
+        .then((d) => {
+          if (d && d.display_name) {
+            setFormData((prev) => ({ ...prev, delivery_address: d.display_name }));
+          }
+          isUpdatingFromMap.current = false;
+        })
+        .catch(() => {
+          isUpdatingFromMap.current = false;
+        });
+    });
+
+    map.on("click", (e) => {
+      marker.setLatLng(e.latlng);
+      isUpdatingFromMap.current = true;
+      fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${e.latlng.lat}&lon=${e.latlng.lng}`)
+        .then((r) => r.json())
+        .then((d) => {
+          if (d && d.display_name) {
+            setFormData((prev) => ({ ...prev, delivery_address: d.display_name }));
+          }
+          isUpdatingFromMap.current = false;
+        })
+        .catch(() => {
+          isUpdatingFromMap.current = false;
+        });
+    });
+  };
+
+  useEffect(() => {
+    if (formData.order_type !== "DELIVERY") return;
+    if (isUpdatingFromMap.current) return;
+    if (!formData.delivery_address || formData.delivery_address.length < 5) return;
+
     const timer = setTimeout(() => {
       fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(formData.delivery_address)}`)
         .then((r) => r.json())
         .then((d) => {
-          if (d && d.length) {
-            setCoords({ lat: parseFloat(d[0].lat), lon: parseFloat(d[0].lon) });
+          if (d && d.length > 0) {
+            const lat = parseFloat(d[0].lat);
+            const lon = parseFloat(d[0].lon);
+            if (mapInstanceRef.current && markerRef.current) {
+              mapInstanceRef.current.setView([lat, lon], 15);
+              markerRef.current.setLatLng([lat, lon]);
+            }
           }
         })
         .catch(() => {});
-    }, 900);
+    }, 800);
+
     return () => clearTimeout(timer);
-  }, [formData.delivery_address, addressTouched, formData.order_type]);
+  }, [formData.delivery_address, formData.order_type]);
 
   const subtotal = carritoActual.reduce((acc, item) => acc + item.precio * item.cantidad, 0);
   const deliveryFee = formData.order_type === "DELIVERY" ? 5.00 : 0.00;
@@ -131,12 +215,9 @@ function Checkout({ carrito = [], setCarrito = () => {} }) {
 
     try {
       const trackingIdResult = await createOrder(orderPayload);
-      
       setTrackingId(trackingIdResult);
-      
       setCarrito([]);
       localStorage.removeItem("carrito");
-      
       setShowModal(true);
     } catch (err) {
       setFormError(err.message || "Ocurrió un error al procesar el pedido.");
@@ -233,46 +314,17 @@ function Checkout({ carrito = [], setCarrito = () => {} }) {
                       type="text"
                       name="delivery_address"
                       value={formData.delivery_address}
-                      onChange={(e) => { handleChange(e); setAddressTouched(true); }}
+                      onChange={handleChange}
                       placeholder="Av. Principal 123, Depto 402"
                     />
                     <Form.Control.Feedback type="invalid">Ingresa tu dirección de entrega.</Form.Control.Feedback>
                   </Form.Group>
 
                   <div className="mb-3">
-                    <Button
-                      type="button"
-                      variant="outline-danger"
-                      className="rounded-pill mb-2"
-                      onClick={() => {
-                        if (!navigator.geolocation) return;
-                        navigator.geolocation.getCurrentPosition((pos) => {
-                          const c = { lat: pos.coords.latitude, lon: pos.coords.longitude };
-                          setCoords(c);
-                          setAddressTouched(false);
-                          fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${c.lat}&lon=${c.lon}`)
-                            .then((r) => r.json())
-                            .then((d) => {
-                              if (d && d.display_name) setFormData((prev) => ({ ...prev, delivery_address: d.display_name }));
-                            })
-                            .catch(() => {});
-                        });
-                      }}
-                    >
-                      <i className="bi bi-geo-alt-fill me-2"></i>Confirmar mi ubicación
-                    </Button>
-                    {coords && (
-                      <div style={{ borderRadius: 16, overflow: "hidden", border: "1px solid #e5e7eb", boxShadow: "0 4px 14px rgba(0,0,0,0.08)" }}>
-                        <iframe
-                          title="mapa-entrega"
-                          width="100%"
-                          height="220"
-                          style={{ border: 0 }}
-                          loading="lazy"
-                          src={`https://www.openstreetmap.org/export/embed.html?bbox=${coords.lon - 0.01},${coords.lat - 0.01},${coords.lon + 0.01},${coords.lat + 0.01}&layer=mapnik&marker=${coords.lat},${coords.lon}`}
-                        ></iframe>
-                      </div>
-                    )}
+                    <div className="text-muted small mb-2">
+                      <i className="bi bi-info-circle me-1"></i>Arrastra el marcador rojo o haz clic en el mapa para ajustar la ubicación exacta.
+                    </div>
+                    <div ref={mapRef} style={{ width: "100%", height: "280px", borderRadius: "16px", border: "1px solid #e5e7eb", zIndex: 1 }}></div>
                   </div>
                 </>
               )}
